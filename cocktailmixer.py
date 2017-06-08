@@ -4,6 +4,7 @@ import json
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtWidgets import QApplication, QProgressBar, QPushButton, QWidget, QStackedWidget, QStyleFactory, QGridLayout, QHBoxLayout, QVBoxLayout, QSizePolicy, QLabel, QSpacerItem
 from PyQt5.QtGui import QPainter, QPen, QColor, QMovie
+# FIXME: why choose QtSerialPort over PySerial?
 from PyQt5.QtSerialPort import QSerialPort
 
 class HeaderLayout(QHBoxLayout):
@@ -129,6 +130,36 @@ class IntroMenu(QWidget):
 		layout.addWidget(title2)
 		layout.addStretch()
 		intro.start()
+		
+class AlcoholMenu(QWidget):
+
+	changeForm = pyqtSignal(int)
+
+	def __init__(self, parent = None):
+		super().__init__(parent)
+		layout = QGridLayout(self)
+		layout.setSpacing(8)
+		layout.setContentsMargins(9, 9, 9, 9)
+		#layout.setContentsMargins(0, 0, 0, 0)
+		#self.setStyleSheet(".QWidget{margin: 11px}")
+		
+		header = HeaderLayout("1. SELECT ALCOHOL")
+		spacer = QSpacerItem(1, 1, QSizePolicy.Expanding, QSizePolicy.Expanding)
+		choice1 = StyledPushButton()
+		choice1.setText("NON-\nALCOHOLIC")
+		choice1.pressed.connect(lambda: self.changeForm.emit(1))
+		choice2 = StyledPushButton()
+		choice2.setText("ALL DRINKS")
+		choice2.pressed.connect(lambda: self.changeForm.emit(1))
+		
+		layout.addLayout(header, 0, 0, 1, 0)
+		layout.addWidget(choice1, 1, 0)
+		layout.addWidget(choice2, 1, 1)
+		layout.addItem(spacer, 2, 0)
+		layout.addItem(spacer, 3, 0)
+		#layout.addStretch()
+		#button = EmergencyStopButton()
+		#layout.addWidget(button, 1, 0)
 
 class SelectMenu(QWidget):
 
@@ -174,39 +205,25 @@ class SelectMenu(QWidget):
 		pb = StyledProgressBar()
 		pb.setValue(50)
 		layout.addWidget(pb, 4, 0, 1, 2)
-
-class AlcoholMenu(QWidget):
-
-	changeForm = pyqtSignal(int)
-
-	def __init__(self, parent = None):
-		super().__init__(parent)
-		layout = QGridLayout(self)
-		layout.setSpacing(8)
-		layout.setContentsMargins(9, 9, 9, 9)
-		#layout.setContentsMargins(0, 0, 0, 0)
-		#self.setStyleSheet(".QWidget{margin: 11px}")
 		
-		header = HeaderLayout("1. SELECT ALCOHOL")
-		spacer = QSpacerItem(1, 1, QSizePolicy.Expanding, QSizePolicy.Expanding)
-		choice1 = StyledPushButton()
-		choice1.setText("NON-\nALCOHOLIC")
-		choice1.pressed.connect(lambda: self.changeForm.emit(1))
-		choice2 = StyledPushButton()
-		choice2.setText("ALL DRINKS")
-		choice2.pressed.connect(lambda: self.changeForm.emit(1))
+class FiniteStateMachine:
+	def __init__(self):
+	# FIXME: really want to use this naming convention?
+		def intro_menu_state():
+			print("intro menu")
+			return alcohol_menu_state
 		
-		layout.addLayout(header, 0, 0, 1, 0)
-		layout.addWidget(choice1, 1, 0)
-		layout.addWidget(choice2, 1, 1)
-		layout.addItem(spacer, 2, 0)
-		layout.addItem(spacer, 3, 0)
-		#layout.addStretch()
-		#button = EmergencyStopButton()
-		#layout.addWidget(button, 1, 0)
+		def alcohol_menu_state():
+			print("alcohol menu")
+			return select_menu_state
 		
-class FiniteStateMachine():
-	
+		def select_menu_state():
+			print("select menu")
+			return None
+		
+		state = intro_menu_state
+		while state: state = state()
+		print("states exited")
 		
 def main(args):
    app = QApplication(args)
@@ -228,6 +245,7 @@ def main(args):
    mainWindow.setCurrentIndex(0)
    
    mainWindow.show()
+   fsm = FiniteStateMachine()
    sys.exit(app.exec_())
   
 if __name__== "__main__":
