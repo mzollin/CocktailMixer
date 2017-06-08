@@ -209,6 +209,8 @@ class SelectMenu(QWidget):
 class FiniteStateMachine:
     def __init__(self):
         self.state = self.intro_menu_state
+        
+    def run(self):
         while self.state: self.state = self.state()
         print("states exited")
 
@@ -245,6 +247,7 @@ def main(args):
 
     mainWindow.show()
     fsm = FiniteStateMachine()
+    fsm.run()
     sys.exit(app.exec_())
   
 if __name__== "__main__":
