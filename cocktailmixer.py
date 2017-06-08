@@ -208,22 +208,21 @@ class SelectMenu(QWidget):
 		
 class FiniteStateMachine:
 	def __init__(self):
-	# FIXME: really want to use this naming convention?
-		def intro_menu_state():
-			print("intro menu")
-			return alcohol_menu_state
-		
-		def alcohol_menu_state():
-			print("alcohol menu")
-			return select_menu_state
-		
-		def select_menu_state():
-			print("select menu")
-			return None
-		
-		state = intro_menu_state
-		while state: state = state()
+		self.state = self.intro_menu_state
+		while self.state: self.state = self.state()
 		print("states exited")
+		
+	def intro_menu_state(self):
+		print("intro menu")
+		return self.alcohol_menu_state
+	
+	def alcohol_menu_state(self):
+		print("alcohol menu")
+		return self.select_menu_state
+	
+	def select_menu_state(self):
+		print("select menu")
+		return None		
 		
 def main(args):
    app = QApplication(args)
