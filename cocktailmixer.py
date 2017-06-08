@@ -224,15 +224,16 @@ class FiniteStateMachine:
 
     def select_menu_state(self):
         print("select menu")
-        return None        
+        return None
 
 def main(args):
     app = QApplication(args)
     app.setStyle(QStyleFactory.create("Fusion"))
 
     # define the windows
-    window1 = AlcoholMenu()
-    window2 = SelectMenu()
+    window1 = IntroMenu()
+    window2 = AlcoholMenu()
+    window3 = SelectMenu()
     mainWindow = StyledStackedWidget()
 
     # set up the slots
@@ -241,6 +242,7 @@ def main(args):
     # add the windows
     mainWindow.addWidget(window1)
     mainWindow.addWidget(window2)
+    mainWindow.addWidget(window3)
 
     # set window to be displayed
     mainWindow.setCurrentIndex(0)
