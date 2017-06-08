@@ -28,13 +28,13 @@ class EmergencyStopButton(QPushButton):
         self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.setStyleSheet("""
             QPushButton {
-                background-image: url("stop-sign.png");
+                background-image: url("media/stop-sign.png");
                 border-radius: 0px;
                 height: 48px;
                 width: 48px;
             }
             QPushButton:pressed {
-                background-image: url("stop-sign-pressed.png");
+                background-image: url("media/stop-sign-pressed.png");
             }
         """)
 
@@ -102,7 +102,7 @@ class IntroMenu(QWidget):
         layout.setContentsMargins(1, 1, 1, 1)
 
         container = QLabel()
-        intro = QMovie("party.gif")
+        intro = QMovie("media/party.gif")
         container.setMovie(intro)
 
         title1 = QLabel("COCKTAIL")
