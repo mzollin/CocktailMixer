@@ -1,5 +1,6 @@
 import sys
 import json
+import time
 
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtWidgets import QApplication, QProgressBar, QPushButton, QWidget, QStackedWidget, QStyleFactory, QGridLayout, QHBoxLayout, QVBoxLayout, QSizePolicy, QLabel, QSpacerItem
@@ -147,10 +148,10 @@ class AlcoholMenu(QWidget):
         spacer = QSpacerItem(1, 1, QSizePolicy.Expanding, QSizePolicy.Expanding)
         choice1 = StyledPushButton()
         choice1.setText("NON-\nALCOHOLIC")
-        choice1.pressed.connect(lambda: self.changeForm.emit(1))
+        choice1.pressed.connect(lambda: self.changeForm.emit(2))
         choice2 = StyledPushButton()
         choice2.setText("ALL DRINKS")
-        choice2.pressed.connect(lambda: self.changeForm.emit(1))
+        choice2.pressed.connect(lambda: self.changeForm.emit(2))
 
         layout.addLayout(header, 0, 0, 1, 0)
         layout.addWidget(choice1, 1, 0)
@@ -231,21 +232,21 @@ def main(args):
     app.setStyle(QStyleFactory.create("Fusion"))
 
     # define the windows
-    window1 = IntroMenu()
-    window2 = AlcoholMenu()
-    window3 = SelectMenu()
+    window0 = IntroMenu()
+    window1 = AlcoholMenu()
+    window2 = SelectMenu()
     mainWindow = StyledStackedWidget()
 
     # set up the slots
     window1.changeForm.connect(mainWindow.setCurrentIndex)
 
     # add the windows
+    mainWindow.addWidget(window0)
     mainWindow.addWidget(window1)
     mainWindow.addWidget(window2)
-    mainWindow.addWidget(window3)
 
     # set window to be displayed
-    mainWindow.setCurrentIndex(0)
+    mainWindow.setCurrentIndex(1)
 
     mainWindow.show()
     fsm = FiniteStateMachine()
