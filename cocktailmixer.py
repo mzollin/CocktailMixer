@@ -11,17 +11,17 @@ from PyQt5.QtSerialPort import QSerialPort
 class HeaderLayout(QHBoxLayout):
     def __init__(self, title, parent = None):
         super().__init__(parent)
-        emg = EmergencyStopButton()
-        label = QLabel(title)
-        label.setStyleSheet("""
+        self.emg = EmergencyStopButton()
+        self.label = QLabel(title)
+        self.label.setStyleSheet("""
             QLabel {
                 color: #FFB900;
                 font: bold;
             }
         """)
-        self.addWidget(label)
+        self.addWidget(self.label)
         self.addStretch()
-        self.addWidget(emg)
+        self.addWidget(self.emg)
 
 class EmergencyStopButton(QPushButton):
     def __init__(self, parent = None):
@@ -167,6 +167,7 @@ class AlcoholMenu(QWidget):
         
         self.choice1.pressed.connect(lambda: self.drink_clicked.emit(True))
         self.choice2.pressed.connect(lambda: self.drink_clicked.emit(False))
+        self.header.emg.pressed.connect(lambda: self.stop_clicked.emit())
 
 class SelectMenu(QWidget):
 
@@ -222,9 +223,11 @@ class Controller:
         self.main_window = StyledStackedWidget()
         self.main_window.addWidget(self.alcohol_menu)
         self.main_window.show()
-        self.alcohol_menu.drink_clicked.connect(self.print)
+        self.alcohol_menu.drink_clicked.connect(self.printval)
+        self.alcohol_menu.stop_clicked.connect(self.printval)
+        self.printval()
         
-    def print(self, value):
+    def printval(self, value="None"):
         print(value)
 
 def main(args):
