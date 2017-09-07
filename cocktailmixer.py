@@ -94,7 +94,7 @@ class StyledStackedWidget(QStackedWidget):
 
 class IntroMenu(QWidget):
 
-    changeForm = pyqtSignal(int)
+    start_clicked = pyqtSignal()
 
     def __init__(self, parent = None):
         super().__init__(parent)
@@ -122,6 +122,8 @@ class IntroMenu(QWidget):
                 font: bold 36px;
             }
         """)
+        
+        #intro.clicked.connect(start_clicked.emit)
 
         layout.addStretch()
         layout.addWidget(title1)
@@ -134,33 +136,37 @@ class IntroMenu(QWidget):
 
 class AlcoholMenu(QWidget):
 
-    changeForm = pyqtSignal(int)
+    drink_clicked = pyqtSignal(bool)
+    stop_clicked = pyqtSignal()
 
     def __init__(self, parent = None):
         super().__init__(parent)
-        layout = QGridLayout(self)
-        layout.setSpacing(8)
-        layout.setContentsMargins(9, 9, 9, 9)
+        self.layout = QGridLayout(self)
+        self.layout.setSpacing(8)
+        self.layout.setContentsMargins(9, 9, 9, 9)
         #layout.setContentsMargins(0, 0, 0, 0)
         #self.setStyleSheet(".QWidget{margin: 11px}")
 
-        header = HeaderLayout("1. SELECT ALCOHOL")
-        spacer = QSpacerItem(1, 1, QSizePolicy.Expanding, QSizePolicy.Expanding)
-        choice1 = StyledPushButton()
-        choice1.setText("NON-\nALCOHOLIC")
-        choice1.pressed.connect(lambda: self.changeForm.emit(2))
-        choice2 = StyledPushButton()
-        choice2.setText("ALL DRINKS")
-        choice2.pressed.connect(lambda: self.changeForm.emit(2))
+        self.header = HeaderLayout("1. SELECT ALCOHOL")
+        self.spacer = QSpacerItem(1, 1, QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.choice1 = StyledPushButton()
+        self.choice1.setText("NON-\nALCOHOLIC")
+        #choice1.pressed.connect(lambda: self.changeForm.emit(2))
+        self.choice2 = StyledPushButton()
+        self.choice2.setText("ALL DRINKS")
+        #choice2.pressed.connect(lambda: self.changeForm.emit(2))
 
-        layout.addLayout(header, 0, 0, 1, 0)
-        layout.addWidget(choice1, 1, 0)
-        layout.addWidget(choice2, 1, 1)
-        layout.addItem(spacer, 2, 0)
-        layout.addItem(spacer, 3, 0)
+        self.layout.addLayout(self.header, 0, 0, 1, 0)
+        self.layout.addWidget(self.choice1, 1, 0)
+        self.layout.addWidget(self.choice2, 1, 1)
+        self.layout.addItem(self.spacer, 2, 0)
+        self.layout.addItem(self.spacer, 3, 0)
         #layout.addStretch()
         #button = EmergencyStopButton()
         #layout.addWidget(button, 1, 0)
+        
+        self.choice1.pressed.connect(lambda: self.drink_clicked.emit(True))
+        self.choice2.pressed.connect(lambda: self.drink_clicked.emit(False))
 
 class SelectMenu(QWidget):
 
@@ -207,50 +213,46 @@ class SelectMenu(QWidget):
         pb.setValue(50)
         layout.addWidget(pb, 4, 0, 1, 2)
         
-class FiniteStateMachine:
+class Controller:
     def __init__(self):
-        self.state = self.intro_menu_state
+        print(">entered controller instance")
         
-    def run(self):
-        while self.state: self.state = self.state()
-        print("states exited")
-
-    def intro_menu_state(self):
-        print("intro menu")
-        return self.alcohol_menu_state
-
-    def alcohol_menu_state(self):
-        print("alcohol menu")
-        return self.select_menu_state
-
-    def select_menu_state(self):
-        print("select menu")
-        return None
+        self.alcohol_menu = AlcoholMenu()
+        print(">entered AlcoholMenu instance")
+        self.main_window = StyledStackedWidget()
+        self.main_window.addWidget(self.alcohol_menu)
+        self.main_window.show()
+        self.alcohol_menu.drink_clicked.connect(self.print)
+        
+    def print(self, value):
+        print(value)
 
 def main(args):
     app = QApplication(args)
     app.setStyle(QStyleFactory.create("Fusion"))
 
     # define the windows
-    window0 = IntroMenu()
-    window1 = AlcoholMenu()
-    window2 = SelectMenu()
-    mainWindow = StyledStackedWidget()
+    #window0 = IntroMenu()
+    #window1 = AlcoholMenu()
+    #window2 = SelectMenu()
+    #mainWindow = StyledStackedWidget()
 
     # set up the slots
-    window1.changeForm.connect(mainWindow.setCurrentIndex)
+    #window1.changeForm.connect(mainWindow.setCurrentIndex)
 
     # add the windows
-    mainWindow.addWidget(window0)
-    mainWindow.addWidget(window1)
-    mainWindow.addWidget(window2)
+    #mainWindow.addWidget(window0)
+    #mainWindow.addWidget(window1)
+    #mainWindow.addWidget(window2)
 
     # set window to be displayed
-    mainWindow.setCurrentIndex(1)
+    #mainWindow.setCurrentIndex(1)
 
-    mainWindow.show()
-    fsm = FiniteStateMachine()
-    fsm.run()
+    #mainWindow.show()
+    
+    # do something here?
+    controller = Controller()
+    
     sys.exit(app.exec_())
   
 if __name__== "__main__":
