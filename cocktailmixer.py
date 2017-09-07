@@ -219,16 +219,23 @@ class Controller:
         print(">entered controller instance")
         
         self.alcohol_menu = AlcoholMenu()
-        print(">entered AlcoholMenu instance")
+        self.select_menu = SelectMenu()
         self.main_window = StyledStackedWidget()
         self.main_window.addWidget(self.alcohol_menu)
-        self.main_window.show()
-        self.alcohol_menu.drink_clicked.connect(self.printval)
-        self.alcohol_menu.stop_clicked.connect(self.printval)
-        self.printval()
+        self.main_window.addWidget(self.select_menu)
         
-    def printval(self, value="None"):
-        print(value)
+        self.main_window.setCurrentWidget(self.alcohol_menu)
+        self.main_window.show()
+        self.alcohol_menu.drink_clicked.connect(self.select_alcohol)
+        self.alcohol_menu.stop_clicked.connect(self.emg_stop)
+        
+    def select_alcohol(self, alcohol):   #TODO: add default value = False?
+        print("select alcohol: " + str(alcohol))
+        self.alcohol = alcohol
+        self.main_window.setCurrentWidget(self.select_menu)
+        
+    def emg_stop(self):
+        print("STOPPED")
 
 def main(args):
     app = QApplication(args)
