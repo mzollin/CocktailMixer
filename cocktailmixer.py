@@ -171,48 +171,50 @@ class AlcoholMenu(QWidget):
 
 class SelectMenu(QWidget):
 
-    changeForm = pyqtSignal(int)
+    stop_clicked = pyqtSignal()
 
     def __init__(self, parent = None):
         super().__init__(parent)
-        layout = QGridLayout(self)
-        layout.setSpacing(8)
-        layout.setContentsMargins(9, 9, 9, 9)
+        self.layout = QGridLayout(self)
+        self.layout.setSpacing(8)
+        self.layout.setContentsMargins(9, 9, 9, 9)
         #layout.setContentsMargins(0, 0, 0, 0)
         #self.setStyleSheet(".QWidget{margin: 11px}")
 
-        choice1 = StyledPushButton()
-        choice1.setText("SEARCH BY \nNAME")
+        self.choice1 = StyledPushButton()
+        self.choice1.setText("SEARCH BY \nNAME")
         #choice1.pressed.connect(lambda: self.changeForm.emit(1))
 
-        choice2 = StyledPushButton()
-        choice2.setText("SEARCH BY \nINGREDIENTS")
+        self.choice2 = StyledPushButton()
+        self.choice2.setText("SEARCH BY \nINGREDIENTS")
 
-        choice3 = StyledPushButton()
-        choice3.setText("RECENT \nDRINKS")
+        self.choice3 = StyledPushButton()
+        self.choice3.setText("RECENT \nDRINKS")
 
-        choice4 = StyledPushButton()
-        choice4.setText("CUSTOM \nDRINK")
+        self.choice4 = StyledPushButton()
+        self.choice4.setText("CUSTOM \nDRINK")
 
-        choice5 = StyledPushButton()
-        choice5.setText("RANDOM \nDRINK")
+        self.choice5 = StyledPushButton()
+        self.choice5.setText("RANDOM \nDRINK")
 
-        choice6 = StyledPushButton()
-        choice6.setText("RANDOM \nINGREDIENTS")
+        self.choice6 = StyledPushButton()
+        self.choice6.setText("RANDOM \nINGREDIENTS")
 
-        header = HeaderLayout("2. SELECT MODE")
-        layout.addLayout(header, 0, 0, 1, 0)
+        self.header = HeaderLayout("2. SELECT MODE")
+        self.layout.addLayout(self.header, 0, 0, 1, 0)
 
-        layout.addWidget(choice1, 1, 0)
-        layout.addWidget(choice2, 1, 1)
-        layout.addWidget(choice3, 2, 0)
-        layout.addWidget(choice4, 2, 1)
-        layout.addWidget(choice5, 3, 0)
-        layout.addWidget(choice6, 3, 1)
+        self.layout.addWidget(self.choice1, 1, 0)
+        self.layout.addWidget(self.choice2, 1, 1)
+        self.layout.addWidget(self.choice3, 2, 0)
+        self.layout.addWidget(self.choice4, 2, 1)
+        self.layout.addWidget(self.choice5, 3, 0)
+        self.layout.addWidget(self.choice6, 3, 1)
 
-        pb = StyledProgressBar()
-        pb.setValue(50)
-        layout.addWidget(pb, 4, 0, 1, 2)
+        self.pb = StyledProgressBar()
+        self.pb.setValue(50)
+        self.layout.addWidget(self.pb, 4, 0, 1, 2)
+        
+        self.header.emg.pressed.connect(lambda: self.stop_clicked.emit())
         
 class Controller:
     def __init__(self):
@@ -228,6 +230,7 @@ class Controller:
         self.main_window.show()
         self.alcohol_menu.drink_clicked.connect(self.select_alcohol)
         self.alcohol_menu.stop_clicked.connect(self.emg_stop)
+        self.select_menu.stop_clicked.connect(self.emg_stop)
         
     def select_alcohol(self, alcohol):   #TODO: add default value = False?
         print("select alcohol: " + str(alcohol))
