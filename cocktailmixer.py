@@ -9,6 +9,7 @@ from PyQt5.QtGui import QPainter, QPen, QColor, QMovie
 from PyQt5.QtSerialPort import QSerialPort
 
 class HeaderLayout(QHBoxLayout):
+
     def __init__(self, title, parent = None):
         super().__init__(parent)
         self.emg = EmergencyStopButton()
@@ -24,6 +25,7 @@ class HeaderLayout(QHBoxLayout):
         self.addWidget(self.emg)
 
 class EmergencyStopButton(QPushButton):
+
     def __init__(self, parent = None):
         super().__init__(parent)
         self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -40,6 +42,7 @@ class EmergencyStopButton(QPushButton):
         """)
 
 class StyledPushButton(QPushButton):
+
     def __init__(self, parent = None):
         super().__init__(parent)
         self.setMinimumWidth(10)
@@ -57,6 +60,7 @@ class StyledPushButton(QPushButton):
         """)
 
 class StyledProgressBar(QProgressBar):
+
     def __init__(self, parent = None):
         super().__init__(parent)
         self.setStyleSheet("""
@@ -74,6 +78,7 @@ class StyledProgressBar(QProgressBar):
         """)
 
 class StyledStackedWidget(QStackedWidget):
+
     def __init__(self, parent = None):
         super().__init__(parent)
         self.setWindowFlags(Qt.FramelessWindowHint)
@@ -91,6 +96,16 @@ class StyledStackedWidget(QStackedWidget):
         pen.setColor(QColor("#FFB900"))
         painter.setPen(pen)
         painter.drawRect(0, 0, 239, 319)
+        
+class ClickableLabel(QLabel):
+
+    label_pressed = pyqtSignal()
+
+    def __init__(self, parent = None):
+        super().__init__(parent)
+        
+    def mousePressEvent(self, ev):
+        self.label_pressed.emit()
 
 class IntroMenu(QWidget):
 
@@ -98,41 +113,41 @@ class IntroMenu(QWidget):
 
     def __init__(self, parent = None):
         super().__init__(parent)
-        layout = QVBoxLayout(self)
+        self.layout = QVBoxLayout(self)
         #layout.setSpacing(8)
-        layout.setContentsMargins(1, 1, 1, 1)
+        self.layout.setContentsMargins(1, 1, 1, 1)
 
-        container = QLabel()
-        intro = QMovie("media/party.gif")
-        container.setMovie(intro)
+        self.container = ClickableLabel()
+        self.intro = QMovie("media/party.gif")
+        self.container.setMovie(self.intro)
 
-        title1 = QLabel("COCKTAIL")
-        title2 = QLabel("MACHINE")
-        title1.setAlignment(Qt.AlignCenter)
-        title2.setAlignment(Qt.AlignCenter)
-        title1.setStyleSheet("""
+        self.title1 = QLabel("COCKTAIL")
+        self.title2 = QLabel("MACHINE")
+        self.title1.setAlignment(Qt.AlignCenter)
+        self.title2.setAlignment(Qt.AlignCenter)
+        self.title1.setStyleSheet("""
             QLabel {
                 color: #FFB900;
                 font: bold 36px;
             }
         """)
-        title2.setStyleSheet("""
+        self.title2.setStyleSheet("""
             QLabel {
                 color: #FFB900;
                 font: bold 36px;
             }
         """)
         
-        #intro.clicked.connect(start_clicked.emit)
+        self.container.label_pressed.connect(lambda: self.start_clicked.emit())
 
-        layout.addStretch()
-        layout.addWidget(title1)
-        layout.addStretch()
-        layout.addWidget(container)
-        layout.addStretch()
-        layout.addWidget(title2)
-        layout.addStretch()
-        intro.start()
+        self.layout.addStretch()
+        self.layout.addWidget(self.title1)
+        self.layout.addStretch()
+        self.layout.addWidget(self.container)
+        self.layout.addStretch()
+        self.layout.addWidget(self.title2)
+        self.layout.addStretch()
+        self.intro.start()
 
 class AlcoholMenu(QWidget):
 
@@ -165,8 +180,8 @@ class AlcoholMenu(QWidget):
         #button = EmergencyStopButton()
         #layout.addWidget(button, 1, 0)
         
-        self.choice1.pressed.connect(lambda: self.drink_clicked.emit(True))
-        self.choice2.pressed.connect(lambda: self.drink_clicked.emit(False))
+        self.choice1.pressed.connect(lambda: self.drink_clicked.emit(False))
+        self.choice2.pressed.connect(lambda: self.drink_clicked.emit(True))
         self.header.emg.pressed.connect(lambda: self.stop_clicked.emit())
 
 class SelectMenu(QWidget):
@@ -217,56 +232,62 @@ class SelectMenu(QWidget):
         self.header.emg.pressed.connect(lambda: self.stop_clicked.emit())
         
 class Controller:
+    
     def __init__(self):
-        print(">entered controller instance")
+        print("> starting controller...")
         
+        # define the menus and window
+        self.intro_menu = IntroMenu()
         self.alcohol_menu = AlcoholMenu()
         self.select_menu = SelectMenu()
         self.main_window = StyledStackedWidget()
+        
+        # add the menus to the window
+        self.main_window.addWidget(self.intro_menu)
         self.main_window.addWidget(self.alcohol_menu)
         self.main_window.addWidget(self.select_menu)
         
-        self.main_window.setCurrentWidget(self.alcohol_menu)
-        self.main_window.show()
-        self.alcohol_menu.drink_clicked.connect(self.select_alcohol)
-        self.alcohol_menu.stop_clicked.connect(self.emg_stop)
-        self.select_menu.stop_clicked.connect(self.emg_stop)
+        self.alcohol_menu.drink_clicked.connect(self.goto_select)
+        self.alcohol_menu.stop_clicked.connect(self.goto_intro)
+        self.select_menu.stop_clicked.connect(self.goto_intro)
+        self.intro_menu.start_clicked.connect(self.goto_alcohol)
         
-    def select_alcohol(self, alcohol):   #TODO: add default value = False?
-        print("select alcohol: " + str(alcohol))
+        print("> controller started")
+        print("> enter intro menu")
+        self.main_window.setCurrentWidget(self.intro_menu)
+        self.main_window.show()
+        
+    def goto_alcohol(self):
+        print("> enter alcohol menu")
+        self.main_window.setCurrentWidget(self.alcohol_menu)
+        
+    def goto_select(self, alcohol):   # TODO: add default value = False?
+        print("alcohol: " + str(alcohol))
+        print("> enter select menu")
         self.alcohol = alcohol
         self.main_window.setCurrentWidget(self.select_menu)
         
-    def emg_stop(self):
-        print("STOPPED")
+    def goto_intro(self):
+        print("EMERGENCY STOP")
+        print("> enter intro menu")
+        self.main_window.setCurrentWidget(self.intro_menu)
 
 def main(args):
     app = QApplication(args)
     app.setStyle(QStyleFactory.create("Fusion"))
 
-    # define the windows
-    #window0 = IntroMenu()
-    #window1 = AlcoholMenu()
-    #window2 = SelectMenu()
-    #mainWindow = StyledStackedWidget()
-
     # set up the slots
     #window1.changeForm.connect(mainWindow.setCurrentIndex)
-
-    # add the windows
-    #mainWindow.addWidget(window0)
-    #mainWindow.addWidget(window1)
-    #mainWindow.addWidget(window2)
 
     # set window to be displayed
     #mainWindow.setCurrentIndex(1)
 
     #mainWindow.show()
     
-    # do something here?
     controller = Controller()
     
     sys.exit(app.exec_())
+    # TODO: add raspi shutdown function? or rather seperate script watching a GPIO-pin?
   
 if __name__== "__main__":
     main( sys.argv )
