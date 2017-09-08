@@ -69,6 +69,7 @@ class StyledProgressBar(QProgressBar):
                 border-radius: 5px;
                 text-align: center;
                 background-color: #FF0000;
+                font-weight: bold;
             }
             QProgressBar::chunk {
                 background-color: #00FF00;
@@ -168,7 +169,7 @@ class AlcoholMenu(QWidget):
         self.choice1.setText("NON-\nALCOHOLIC")
         #choice1.pressed.connect(lambda: self.changeForm.emit(2))
         self.choice2 = StyledPushButton()
-        self.choice2.setText("ALL DRINKS")
+        self.choice2.setText("ALL\nCOCKTAILS")
         #choice2.pressed.connect(lambda: self.changeForm.emit(2))
 
         self.layout.addLayout(self.header, 0, 0, 1, 0)
@@ -184,9 +185,10 @@ class AlcoholMenu(QWidget):
         self.choice2.pressed.connect(lambda: self.drink_clicked.emit(True))
         self.header.emg.pressed.connect(lambda: self.stop_clicked.emit())
 
-class SelectMenu(QWidget):
+class ModeMenu(QWidget):
 
     stop_clicked = pyqtSignal()
+    select_cocktail_clicked = pyqtSignal()
 
     def __init__(self, parent = None):
         super().__init__(parent)
@@ -197,20 +199,20 @@ class SelectMenu(QWidget):
         #self.setStyleSheet(".QWidget{margin: 11px}")
 
         self.choice1 = StyledPushButton()
-        self.choice1.setText("SEARCH BY \nNAME")
+        self.choice1.setText("SELECT BY \nNAME")
         #choice1.pressed.connect(lambda: self.changeForm.emit(1))
 
         self.choice2 = StyledPushButton()
-        self.choice2.setText("SEARCH BY \nINGREDIENTS")
+        self.choice2.setText("SELECT BY \nINGREDIENTS")
 
         self.choice3 = StyledPushButton()
-        self.choice3.setText("RECENT \nDRINKS")
+        self.choice3.setText("RECENT \nCOCKTAILS")
 
         self.choice4 = StyledPushButton()
-        self.choice4.setText("CUSTOM \nDRINK")
+        self.choice4.setText("CUSTOM \nCOCKTAIL")
 
         self.choice5 = StyledPushButton()
-        self.choice5.setText("RANDOM \nDRINK")
+        self.choice5.setText("RANDOM \nCOCKTAIL")
 
         self.choice6 = StyledPushButton()
         self.choice6.setText("RANDOM \nINGREDIENTS")
@@ -225,9 +227,27 @@ class SelectMenu(QWidget):
         self.layout.addWidget(self.choice5, 3, 0)
         self.layout.addWidget(self.choice6, 3, 1)
 
-        self.pb = StyledProgressBar()
-        self.pb.setValue(50)
-        self.layout.addWidget(self.pb, 4, 0, 1, 2)
+        # DONT REMOVE, progressbar example
+        #self.pb = StyledProgressBar()
+        #self.pb.setValue(50)
+        #self.layout.addWidget(self.pb, 4, 0, 1, 2)
+        
+        self.header.emg.pressed.connect(lambda: self.stop_clicked.emit())
+        self.choice1.pressed.connect(lambda: self.select_cocktail_clicked.emit())
+        
+class SelectCocktailMenu(QWidget):
+
+    stop_clicked = pyqtSignal()
+
+    def __init__(self, parent = None):
+        super().__init__(parent)
+        self.layout = QGridLayout(self)
+        self.layout.setSpacing(8)
+        self.layout.setContentsMargins(9, 9, 9, 9)
+        self.header = HeaderLayout("3. SELECT COCKTAIL")
+        self.spacer = QSpacerItem(1, 1, QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.layout.addLayout(self.header, 0, 0, 1, 0)
+        self.layout.addItem(self.spacer, 1, 0)
         
         self.header.emg.pressed.connect(lambda: self.stop_clicked.emit())
         
@@ -236,21 +256,28 @@ class Controller:
     def __init__(self):
         print("> starting controller...")
         
+        print(">  - loading database")
+        print(">  - doing something else")
+        
         # define the menus and window
         self.intro_menu = IntroMenu()
         self.alcohol_menu = AlcoholMenu()
-        self.select_menu = SelectMenu()
+        self.mode_menu = ModeMenu()
+        self.select_cocktail_menu = SelectCocktailMenu()
         self.main_window = StyledStackedWidget()
         
         # add the menus to the window
         self.main_window.addWidget(self.intro_menu)
         self.main_window.addWidget(self.alcohol_menu)
-        self.main_window.addWidget(self.select_menu)
+        self.main_window.addWidget(self.mode_menu)
+        self.main_window.addWidget(self.select_cocktail_menu)
         
-        self.alcohol_menu.drink_clicked.connect(self.goto_select)
         self.alcohol_menu.stop_clicked.connect(self.goto_intro)
-        self.select_menu.stop_clicked.connect(self.goto_intro)
+        self.mode_menu.stop_clicked.connect(self.goto_intro)
+        self.select_cocktail_menu.stop_clicked.connect(self.goto_intro)
         self.intro_menu.start_clicked.connect(self.goto_alcohol)
+        self.alcohol_menu.drink_clicked.connect(self.goto_select)
+        self.mode_menu.select_cocktail_clicked.connect(self.goto_select_cocktail)
         
         print("> controller started")
         print("> enter intro menu")
@@ -263,14 +290,18 @@ class Controller:
         
     def goto_select(self, alcohol):   # TODO: add default value = False?
         print("alcohol: " + str(alcohol))
-        print("> enter select menu")
+        print("> enter mode menu")
         self.alcohol = alcohol
-        self.main_window.setCurrentWidget(self.select_menu)
+        self.main_window.setCurrentWidget(self.mode_menu)
         
     def goto_intro(self):
         print("EMERGENCY STOP")
         print("> enter intro menu")
         self.main_window.setCurrentWidget(self.intro_menu)
+        
+    def goto_select_cocktail(self):
+        print("> enter select cocktail menu")
+        self.main_window.setCurrentWidget(self.select_cocktail_menu)
 
 def main(args):
     app = QApplication(args)
