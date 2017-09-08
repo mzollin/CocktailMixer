@@ -115,7 +115,6 @@ class IntroMenu(QWidget):
     def __init__(self, parent = None):
         super().__init__(parent)
         self.layout = QVBoxLayout(self)
-        #self.layout.setSpacing(8)
         self.layout.setContentsMargins(1, 1, 1, 1)
 
         self.container = ClickableLabel()
@@ -164,20 +163,25 @@ class AlcoholMenu(QWidget):
         #self.setStyleSheet(".QWidget{margin: 11px}")
 
         self.header = HeaderLayout("SELECT ALCOHOL")
-        self.spacer = QSpacerItem(1, 1, QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.spacer = QSpacerItem(1, 169, QSizePolicy.Expanding, QSizePolicy.Expanding) #fine tuned for the right size
         self.choice1 = StyledPushButton()
         self.choice1.setText("NON-\nALCOHOLIC")
         self.choice2 = StyledPushButton()
         self.choice2.setText("ALL\nCOCKTAILS")
+        #self.choice3 = StyledPushButton()
+        #self.choice4 = StyledPushButton()
+        #self.choice5 = StyledPushButton()
+        #self.choice6 = StyledPushButton()
 
         self.layout.addLayout(self.header, 0, 0, 1, 0)
         self.layout.addWidget(self.choice1, 1, 0)
         self.layout.addWidget(self.choice2, 1, 1)
+        #self.layout.addWidget(self.choice3, 2, 0)
+        #self.layout.addWidget(self.choice4, 2, 1)
+        #self.layout.addWidget(self.choice5, 3, 0)
+        #self.layout.addWidget(self.choice6, 3, 1)
         self.layout.addItem(self.spacer, 2, 0)
-        self.layout.addItem(self.spacer, 3, 0)
-        #self.layout.addStretch()
-        #button = EmergencyStopButton()
-        #self.layout.addWidget(button, 1, 0)
+        #self.layout.addItem(self.spacer, 3, 0)
         
         self.choice1.pressed.connect(lambda: self.drink_clicked.emit(False))
         self.choice2.pressed.connect(lambda: self.drink_clicked.emit(True))
@@ -278,6 +282,7 @@ class Controller:
         self.main_window.addWidget(self.mode_menu)
         self.main_window.addWidget(self.select_cocktail_menu)
         
+        # connect the slots
         self.alcohol_menu.stop_clicked.connect(self.goto_intro)
         self.mode_menu.stop_clicked.connect(self.goto_intro)
         self.select_cocktail_menu.stop_clicked.connect(self.goto_intro)
@@ -312,19 +317,11 @@ class Controller:
 def main(args):
     app = QApplication(args)
     app.setStyle(QStyleFactory.create("Fusion"))
-
-    # set up the slots
-    #window1.changeForm.connect(mainWindow.setCurrentIndex)
-
-    # set window to be displayed
-    #mainWindow.setCurrentIndex(1)
-
-    #mainWindow.show()
     
     controller = Controller()
     
-    sys.exit(app.exec_())
     # TODO: add raspi shutdown function? or rather seperate script watching a GPIO-pin?
+    sys.exit(app.exec_())
   
 if __name__== "__main__":
     main( sys.argv )
