@@ -115,7 +115,7 @@ class IntroMenu(QWidget):
     def __init__(self, parent = None):
         super().__init__(parent)
         self.layout = QVBoxLayout(self)
-        #layout.setSpacing(8)
+        #self.layout.setSpacing(8)
         self.layout.setContentsMargins(1, 1, 1, 1)
 
         self.container = ClickableLabel()
@@ -160,26 +160,24 @@ class AlcoholMenu(QWidget):
         self.layout = QGridLayout(self)
         self.layout.setSpacing(8)
         self.layout.setContentsMargins(9, 9, 9, 9)
-        #layout.setContentsMargins(0, 0, 0, 0)
+        #self.layout.setContentsMargins(0, 0, 0, 0)
         #self.setStyleSheet(".QWidget{margin: 11px}")
 
-        self.header = HeaderLayout("1. SELECT ALCOHOL")
+        self.header = HeaderLayout("SELECT ALCOHOL")
         self.spacer = QSpacerItem(1, 1, QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.choice1 = StyledPushButton()
         self.choice1.setText("NON-\nALCOHOLIC")
-        #choice1.pressed.connect(lambda: self.changeForm.emit(2))
         self.choice2 = StyledPushButton()
         self.choice2.setText("ALL\nCOCKTAILS")
-        #choice2.pressed.connect(lambda: self.changeForm.emit(2))
 
         self.layout.addLayout(self.header, 0, 0, 1, 0)
         self.layout.addWidget(self.choice1, 1, 0)
         self.layout.addWidget(self.choice2, 1, 1)
         self.layout.addItem(self.spacer, 2, 0)
         self.layout.addItem(self.spacer, 3, 0)
-        #layout.addStretch()
+        #self.layout.addStretch()
         #button = EmergencyStopButton()
-        #layout.addWidget(button, 1, 0)
+        #self.layout.addWidget(button, 1, 0)
         
         self.choice1.pressed.connect(lambda: self.drink_clicked.emit(False))
         self.choice2.pressed.connect(lambda: self.drink_clicked.emit(True))
@@ -195,12 +193,11 @@ class ModeMenu(QWidget):
         self.layout = QGridLayout(self)
         self.layout.setSpacing(8)
         self.layout.setContentsMargins(9, 9, 9, 9)
-        #layout.setContentsMargins(0, 0, 0, 0)
+        #self.layout.setContentsMargins(0, 0, 0, 0)
         #self.setStyleSheet(".QWidget{margin: 11px}")
 
         self.choice1 = StyledPushButton()
         self.choice1.setText("SELECT BY \nNAME")
-        #choice1.pressed.connect(lambda: self.changeForm.emit(1))
 
         self.choice2 = StyledPushButton()
         self.choice2.setText("SELECT BY \nINGREDIENTS")
@@ -217,7 +214,7 @@ class ModeMenu(QWidget):
         self.choice6 = StyledPushButton()
         self.choice6.setText("RANDOM \nINGREDIENTS")
 
-        self.header = HeaderLayout("2. SELECT MODE")
+        self.header = HeaderLayout("SELECT MODE")
         self.layout.addLayout(self.header, 0, 0, 1, 0)
 
         self.layout.addWidget(self.choice1, 1, 0)
@@ -244,10 +241,19 @@ class SelectCocktailMenu(QWidget):
         self.layout = QGridLayout(self)
         self.layout.setSpacing(8)
         self.layout.setContentsMargins(9, 9, 9, 9)
-        self.header = HeaderLayout("3. SELECT COCKTAIL")
+        self.header = HeaderLayout("SELECT COCKTAIL")
         self.spacer = QSpacerItem(1, 1, QSizePolicy.Expanding, QSizePolicy.Expanding)
+        
+        self.choice1 = StyledPushButton()
+        self.choice1.setText("BUTTON1")
+        self.choice2 = StyledPushButton()
+        self.choice2.setText("BUTTON2")
+        
         self.layout.addLayout(self.header, 0, 0, 1, 0)
-        self.layout.addItem(self.spacer, 1, 0)
+        self.layout.addWidget(self.choice1, 1, 0)
+        self.layout.addWidget(self.choice2, 1, 1)
+        self.layout.addItem(self.spacer, 2, 0)
+        self.layout.addItem(self.spacer, 3, 0)
         
         self.header.emg.pressed.connect(lambda: self.stop_clicked.emit())
         
