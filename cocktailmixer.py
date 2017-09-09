@@ -3,8 +3,8 @@ import json
 import time
 
 from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtWidgets import QApplication, QProgressBar, QPushButton, QWidget, QStackedWidget, QStyleFactory, QGridLayout, QHBoxLayout, QVBoxLayout, QSizePolicy, QLabel, QSpacerItem
-from PyQt5.QtGui import QPainter, QPen, QColor, QMovie
+from PyQt5.QtWidgets import QApplication, QProgressBar, QPushButton, QWidget, QStackedWidget, QStyleFactory, QGridLayout, QHBoxLayout, QVBoxLayout, QSizePolicy, QLabel, QSpacerItem, QListWidget, QListWidgetItem
+from PyQt5.QtGui import QPainter, QPen, QColor, QMovie, QFont
 # FIXME: why choose QtSerialPort over PySerial?
 from PyQt5.QtSerialPort import QSerialPort
 
@@ -117,7 +117,7 @@ class IntroMenu(QWidget):
         self.layout = QVBoxLayout(self)
         self.layout.setContentsMargins(1, 1, 1, 1)
 
-        self.container = ClickableLabel()
+        self.container = ClickableLabel(self)
         self.intro = QMovie("media/party.gif")
         self.container.setMovie(self.intro)
 
@@ -246,18 +246,51 @@ class SelectCocktailMenu(QWidget):
         self.layout.setSpacing(8)
         self.layout.setContentsMargins(9, 9, 9, 9)
         self.header = HeaderLayout("SELECT COCKTAIL")
-        self.spacer = QSpacerItem(1, 1, QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.list = QListWidget(self)
+        self.list.setStyleSheet("""
+            QListWidget {
+                background-color: #000000;
+                color: #FFB900
+            }
+            QListWidget::item:selected {
+                background-color: #FFB900;
+                color: #000000;
+            }
+            QScrollBar {
+                width: 0px;
+                height: 0px;
+            }
+        """)
+        self.list.addItem("Apricot Sling")
+        self.list.addItem("Bacardi Cocktail")
+        self.list.addItem("Bacardi Cola")
+        self.list.addItem("Bacardi Spezial")
+        self.list.addItem("Baracuda Bite")
+        self.list.addItem("Bay Breeze")
+        self.list.addItem("Berlin Master")
+        self.list.addItem("Big Ben")
+        self.list.addItem("Big Fake")
+        self.list.addItem("Bittersweet Bondage")
+        self.list.addItem("Black Sun")
+        self.list.addItem("California Sour")
+        self.list.addItem("Caribbean Night")
+        self.list.addItem("Cosmopolitan")
+        self.list.addItem("Cranberry Cooler")
+        self.list.addItem("Crusta")
         
-        self.choice1 = StyledPushButton()
-        self.choice1.setText("BUTTON1")
-        self.choice2 = StyledPushButton()
-        self.choice2.setText("BUTTON2")
+        #add a bold text item
+        self.myFont = QFont()
+        self.myFont.setBold(True)
+        self.testitem = QListWidgetItem("test")
+        self.testitem.setFont(self.myFont)
+        self.list.addItem(self.testitem)
+        
+        #self.list.scrollToTop()
+        
+        self.list.setCurrentItem(self.testitem)
         
         self.layout.addLayout(self.header, 0, 0, 1, 0)
-        self.layout.addWidget(self.choice1, 1, 0)
-        self.layout.addWidget(self.choice2, 1, 1)
-        self.layout.addItem(self.spacer, 2, 0)
-        self.layout.addItem(self.spacer, 3, 0)
+        self.layout.addWidget(self.list, 1, 0)
         
         self.header.emg.pressed.connect(lambda: self.stop_clicked.emit())
         
