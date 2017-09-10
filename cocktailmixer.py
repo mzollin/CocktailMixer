@@ -255,6 +255,7 @@ class SelectCocktailMenu(QWidget):
             QListWidget::item:selected {
                 background-color: #FFB900;
                 color: #000000;
+                border-radius: 3px;
             }
             QScrollBar {
                 width: 0px;
@@ -299,7 +300,16 @@ class Controller:
     def __init__(self):
         print("> starting controller...")
         
-        print(">  - loading database")
+        
+        print(">  - loading cocktail database")
+        # TODO: implement error handling and maybe close the file in the end?
+        with open("data/cocktails.json") as cocktail_json_file:
+            cocktail_data = json.load(cocktail_json_file)
+            
+        with open("data/ingredients.json") as ingredients_json_file:
+            ingredients_data = json.load(ingredients_json_file)
+            
+            
         print(">  - doing something else")
         
         # define the menus and window
