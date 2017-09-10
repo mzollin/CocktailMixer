@@ -163,7 +163,7 @@ class AlcoholMenu(QWidget):
         #self.setStyleSheet(".QWidget{margin: 11px}")
 
         self.header = HeaderLayout("SELECT ALCOHOL")
-        self.spacer = QSpacerItem(1, 169, QSizePolicy.Expanding, QSizePolicy.Expanding) #fine tuned for the right size
+        self.spacer = QSpacerItem(1, 169, QSizePolicy.Expanding, QSizePolicy.Expanding) # fine-tuned for the right size
         self.choice1 = StyledPushButton()
         self.choice1.setText("NON-\nALCOHOLIC")
         self.choice2 = StyledPushButton()
@@ -290,6 +290,22 @@ class SelectCocktailMenu(QWidget):
         else:
             for p in cocktails["non-alcoholic"]:
                 self.list.addItem(p)
+                
+class SizePriceMenu(QWidget):
+    
+    stop_clicked = pyqtSignal()
+
+    def __init__(self, parent = None):
+        super().__init__(parent)
+        self.layout = QGridLayout(self)
+        self.layout.setSpacing(8)
+        self.layout.setContentsMargins(9, 9, 9, 9)
+        self.header = HeaderLayout("SELECT SIZE")
+        
+        self.layout.addLayout(self.header, 0, 0, 1, 0)
+        #self.layout.addWidget(self.list, 1, 0)
+        
+        self.header.emg.pressed.connect(lambda: self.stop_clicked.emit())
         
 class Controller:
     
@@ -313,6 +329,7 @@ class Controller:
         self.alcohol_menu = AlcoholMenu()
         self.mode_menu = ModeMenu()
         self.select_cocktail_menu = SelectCocktailMenu()
+        self.size_price_menu = SizePriceMenu()
         self.main_window = StyledStackedWidget()
         
         # add the menus to the window
@@ -320,11 +337,13 @@ class Controller:
         self.main_window.addWidget(self.alcohol_menu)
         self.main_window.addWidget(self.mode_menu)
         self.main_window.addWidget(self.select_cocktail_menu)
+        self.main_window.addWidget(self.size_price_menu)
         
         # connect the slots
         self.alcohol_menu.stop_clicked.connect(self.goto_intro)
         self.mode_menu.stop_clicked.connect(self.goto_intro)
         self.select_cocktail_menu.stop_clicked.connect(self.goto_intro)
+        self.size_price_menu.stop_clicked.connect(self.goto_intro)
         self.intro_menu.start_clicked.connect(self.goto_alcohol)
         self.alcohol_menu.drink_clicked.connect(self.goto_select)
         self.mode_menu.select_cocktail_clicked.connect(self.goto_select_cocktail)
@@ -350,9 +369,14 @@ class Controller:
         self.main_window.setCurrentWidget(self.intro_menu)
         
     def goto_select_cocktail(self):
-        print("> enter select cocktail menu")
+        # TODO: do the update directly after the non-alcoholic/all-cocktails selection in AlcoholMenu?
         self.select_cocktail_menu.update(self.cocktail_data, self.alcohol)
+        print("> enter select cocktail menu")
         self.main_window.setCurrentWidget(self.select_cocktail_menu)
+        
+    def goto_size_price(self):
+        print("> enter size price menu")
+        self.main_window.setCurrentWidget(self.size_price_menu)
 
 def main(args):
     app = QApplication(args)
