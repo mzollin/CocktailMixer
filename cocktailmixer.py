@@ -121,20 +121,20 @@ class IntroMenu(QWidget):
         self.intro = QMovie("media/party.gif")
         self.container.setMovie(self.intro)
 
-        self.title1 = QLabel("COCKTAIL")
-        self.title2 = QLabel("MACHINE")
+        self.title1 = QLabel("COCKTAIL MACHINE")
+        self.title2 = QLabel("TAP SCREEN TO START")
         self.title1.setAlignment(Qt.AlignCenter)
         self.title2.setAlignment(Qt.AlignCenter)
         self.title1.setStyleSheet("""
             QLabel {
                 color: #FFB900;
-                font: bold 36px;
+                font: bold 20px;
             }
         """)
         self.title2.setStyleSheet("""
             QLabel {
                 color: #FFB900;
-                font: bold 36px;
+                font: bold 18px;
             }
         """)
         
