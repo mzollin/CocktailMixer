@@ -262,38 +262,34 @@ class SelectCocktailMenu(QWidget):
                 height: 0px;
             }
         """)
-        self.list.addItem("Apricot Sling")
-        self.list.addItem("Bacardi Cocktail")
-        self.list.addItem("Bacardi Cola")
-        self.list.addItem("Bacardi Spezial")
-        self.list.addItem("Baracuda Bite")
-        self.list.addItem("Bay Breeze")
-        self.list.addItem("Berlin Master")
-        self.list.addItem("Big Ben")
-        self.list.addItem("Big Fake")
-        self.list.addItem("Bittersweet Bondage")
-        self.list.addItem("Black Sun")
-        self.list.addItem("California Sour")
-        self.list.addItem("Caribbean Night")
-        self.list.addItem("Cosmopolitan")
-        self.list.addItem("Cranberry Cooler")
-        self.list.addItem("Crusta")
         
+        #self.list.addItem("Apricot Sling")
+
         #add a bold text item
-        self.myFont = QFont()
-        self.myFont.setBold(True)
-        self.testitem = QListWidgetItem("test")
-        self.testitem.setFont(self.myFont)
-        self.list.addItem(self.testitem)
+        #self.myFont = QFont()
+        #self.myFont.setBold(True)
+        #self.testitem = QListWidgetItem("test")
+        #self.testitem.setFont(self.myFont)
+        #self.list.addItem(self.testitem)
         
         #self.list.scrollToTop()
         
-        self.list.setCurrentItem(self.testitem)
+        #self.list.setCurrentItem(self.testitem)
         
         self.layout.addLayout(self.header, 0, 0, 1, 0)
         self.layout.addWidget(self.list, 1, 0)
         
         self.header.emg.pressed.connect(lambda: self.stop_clicked.emit())
+        
+    def update(self, cocktails, alcoholic):
+        print("> updating available cocktails")
+        self.list.clear()
+        if alcoholic == True:
+            for p in cocktails["alcoholic"]:
+                self.list.addItem(p)
+        else:
+            for p in cocktails["non-alcoholic"]:
+                self.list.addItem(p)
         
 class Controller:
     
@@ -301,13 +297,13 @@ class Controller:
         print("> starting controller...")
         
         
-        print(">  - loading cocktail database")
+        print(">  - loading cocktail databases")
         # TODO: implement error handling and maybe close the file in the end?
         with open("data/cocktails.json") as cocktail_json_file:
-            cocktail_data = json.load(cocktail_json_file)
+            self.cocktail_data = json.load(cocktail_json_file)
             
         with open("data/ingredients.json") as ingredients_json_file:
-            ingredients_data = json.load(ingredients_json_file)
+            self.ingredients_data = json.load(ingredients_json_file)
             
             
         print(">  - doing something else")
@@ -355,6 +351,7 @@ class Controller:
         
     def goto_select_cocktail(self):
         print("> enter select cocktail menu")
+        self.select_cocktail_menu.update(self.cocktail_data, self.alcohol)
         self.main_window.setCurrentWidget(self.select_cocktail_menu)
 
 def main(args):
