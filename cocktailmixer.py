@@ -1,11 +1,12 @@
 import sys
 import json
+# TODO: use the jsonlines library for added stability?
 import time
 
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtWidgets import QApplication, QProgressBar, QPushButton, QWidget, QStackedWidget, QStyleFactory, QGridLayout, QHBoxLayout, QVBoxLayout, QSizePolicy, QLabel, QSpacerItem, QListWidget, QListWidgetItem
 from PyQt5.QtGui import QPainter, QPen, QColor, QMovie, QFont
-# FIXME: why choose QtSerialPort over PySerial?
+# TODO: why choose QtSerialPort over PySerial? async?
 from PyQt5.QtSerialPort import QSerialPort
 
 class HeaderLayout(QHBoxLayout):
@@ -307,7 +308,12 @@ class SizePriceMenu(QWidget):
         
         self.header.emg.pressed.connect(lambda: self.stop_clicked.emit())
         
-class Controller:
+class HardwareInterface():
+
+    def __init__(self):
+        print("hello")
+
+class Controller():
     
     def __init__(self):
         print("> starting controller...")
@@ -322,7 +328,11 @@ class Controller:
             self.ingredients_data = json.load(ingredients_json_file)
             
             
-        print(">  - doing something else")
+        print(">  - connecting to hardware")
+        hadrware_interface = HardwareInterface()
+            
+            
+        print(">  - loading GUI elements")
         
         # define the menus and window
         self.intro_menu = IntroMenu()
