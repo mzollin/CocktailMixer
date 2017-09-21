@@ -3,7 +3,7 @@ import json
 # TODO: use the jsonlines library for added stability?
 import time
 
-from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtCore import Qt, pyqtSignal, QIODevice
 from PyQt5.QtWidgets import QApplication, QProgressBar, QPushButton, QWidget, QStackedWidget, QStyleFactory, QGridLayout, QHBoxLayout, QVBoxLayout, QSizePolicy, QLabel, QSpacerItem, QListWidget, QListWidgetItem
 from PyQt5.QtGui import QPainter, QPen, QColor, QMovie, QFont
 # TODO: why choose QtSerialPort over PySerial? async?
@@ -311,7 +311,14 @@ class SizePriceMenu(QWidget):
 class HardwareInterface():
 
     def __init__(self):
-        print("hello")
+        # TODO: define port at a better location
+        # TODO: check for port opening / writing exceptions
+        self.serial = QSerialPort("COM8")
+        self.serial.open(QIODevice.ReadWrite)
+        self.serial.setBaudRate(115200)
+        #self.serial.putChar('F')
+        self.serial.write(b"test\n")
+        self.serial.flush()
 
 class Controller():
     
@@ -394,6 +401,7 @@ def main(args):
     
     controller = Controller()
     
+    # TODO close serial port, files, etc?
     # TODO: add raspi shutdown function? or rather seperate script watching a GPIO-pin?
     sys.exit(app.exec_())
   
