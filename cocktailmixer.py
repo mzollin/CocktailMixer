@@ -1,12 +1,10 @@
 import sys
 import json
-# TODO: use the jsonlines library for added stability?
 import time
 
 from PyQt5.QtCore import Qt, pyqtSignal, QIODevice
 from PyQt5.QtWidgets import QApplication, QProgressBar, QPushButton, QWidget, QStackedWidget, QStyleFactory, QGridLayout, QHBoxLayout, QVBoxLayout, QSizePolicy, QLabel, QSpacerItem, QListWidget, QListWidgetItem
 from PyQt5.QtGui import QPainter, QPen, QColor, QMovie, QFont
-# TODO: why choose QtSerialPort over PySerial? async?
 from PyQt5.QtSerialPort import QSerialPort
 
 class HeaderLayout(QHBoxLayout):
@@ -313,18 +311,29 @@ class HardwareInterface():
     def __init__(self):
         # TODO: define port at a better location
         # TODO: check for port opening / writing exceptions
-        self.serial = QSerialPort("COM8")
+        self.serial = QSerialPort()
+        self.serial.readyRead.connect(self.read)
+        self.serial.setPortName("COM8")
         self.serial.open(QIODevice.ReadWrite)
         self.serial.setBaudRate(115200)
-        #self.serial.putChar('F')
-        self.serial.write(b"test\n")
+        self.serial.setDataBits(8)
+        self.serial.setParity(QSerialPort.NoParity)
+        self.serial.setStopBits(1)
+        self.serial.setFlowControl(QSerialPort.NoFlowControl)
+        assert self.serial.error() == QSerialPort.NoError
+
+        self.serial.clear(QSerialPort.Input)
+        
+        self.serial.write(b"DEBUG: serial write test\n")
         self.serial.flush()
+        
+    def read(self):
+        print("DEBUG: serial received data: ", (bytes(self.serial.readAll()).decode('utf-8')))
 
 class Controller():
     
     def __init__(self):
         print("> starting controller...")
-        
         
         print(">  - loading cocktail databases")
         # TODO: implement error handling and maybe close the file in the end?
@@ -334,13 +343,10 @@ class Controller():
         with open("data/ingredients.json") as ingredients_json_file:
             self.ingredients_data = json.load(ingredients_json_file)
             
-            
         print(">  - connecting to hardware")
-        hadrware_interface = HardwareInterface()
-            
+        self.hardware_interface = HardwareInterface()
             
         print(">  - loading GUI elements")
-        
         # define the menus and window
         self.intro_menu = IntroMenu()
         self.alcohol_menu = AlcoholMenu()
@@ -375,13 +381,13 @@ class Controller():
         self.main_window.setCurrentWidget(self.alcohol_menu)
         
     def goto_select(self, alcohol):   # TODO: add default value = False?
-        print("alcohol: " + str(alcohol))
+        print("DEBUG: alcohol: " + str(alcohol))
         print("> enter mode menu")
         self.alcohol = alcohol
         self.main_window.setCurrentWidget(self.mode_menu)
         
     def goto_intro(self):
-        print("EMERGENCY STOP")
+        print("> EMERGENCY STOP")
         print("> enter intro menu")
         self.main_window.setCurrentWidget(self.intro_menu)
         
