@@ -327,11 +327,16 @@ class HardwareInterface():
     def serialRead(self):
         #print("DEBUG: serial received data: ", (bytes(self.serial.readAll()).decode('utf-8')))
         if self.serial.canReadLine():
-            print("DEBUG: calling processing")
+            print("DEBUG: processing received serial data")
             self.serialProcess(self.serial.readLine())
             
     def serialProcess(self, rx_line):
-        print("DEBUG: reading line: MESSAGE:", (bytes(rx_line).decode('utf-8')).rstrip())
+        #print("DEBUG: reading line: MESSAGE:", (bytes(rx_line).decode('utf-8')).rstrip())
+        serial_data = json.loads(bytes(rx_line).decode('utf-8'))
+        if serial_data["command"] == "update":
+            if serial_data["id"] == "encoder":
+                print("DEBUG: " + serial_data["value"])
+        
         
 class Controller():
     

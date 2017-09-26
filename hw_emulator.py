@@ -42,8 +42,10 @@ class Emulator():
     
     def sendDebug(self):
         print("> EMU: sending debug")
-        self.serial.write(b"DEBUG EMU: serial write test\n")
-
+        #self.serial.write(b'{"name": "Gilbert", "wins": [["straight", "7p"], ["one pair", "10h"]]}\n')
+        self.serial.write(b'{"command": "update", "id": "encoder", "value": "1", "checksum": "ABCD"}\n')
+        #self.serial.write(b'{"alcoholic": {"Air Conditioner": [{"alc1": 50},{"alc2": 60},{"alc3": 65}],"Gin Tonic": [{"gin": 100},{"tonic": 100}]},"non-alcoholic": {"Virgin Mojito": [{"ginger ale": 150},{"syrup": 25}]}}\n')
+        
 def main(args):
 
     app = QApplication(args)
