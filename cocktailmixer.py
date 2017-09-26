@@ -100,9 +100,6 @@ class StyledStackedWidget(QStackedWidget):
 class ClickableLabel(QLabel):
 
     label_pressed = pyqtSignal()
-
-    def __init__(self, parent = None):
-        super().__init__(parent)
         
     def mousePressEvent(self, ev):
         self.label_pressed.emit()
@@ -312,7 +309,7 @@ class HardwareInterface():
         # TODO: define port at a better location
         # TODO: check for port opening / writing exceptions
         self.serial = QSerialPort()
-        self.serial.readyRead.connect(self.read)
+        self.serial.readyRead.connect(self.serialRead)
         self.serial.setPortName("COM8")
         self.serial.open(QIODevice.ReadWrite)
         self.serial.setBaudRate(115200)
@@ -324,12 +321,19 @@ class HardwareInterface():
 
         self.serial.clear(QSerialPort.Input)
         
-        self.serial.write(b"DEBUG: serial write test\n")
+        self.serial.write(b"DEBUG: serial write test")
         self.serial.flush()
         
-    def read(self):
-        print("DEBUG: serial received data: ", (bytes(self.serial.readAll()).decode('utf-8')))
-
+    def serialRead(self):
+        #print("DEBUG: serial received data: ", (bytes(self.serial.readAll()).decode('utf-8')))
+        if self.serial.canReadLine():
+            print("DEBUG: calling processing")
+            self.serialProcess(self.serial.readLine())
+            
+    def serialProcess(self, rx_line):
+        print("DEBUG: reading line: ")
+        print(rx_line)
+        
 class Controller():
     
     def __init__(self):
