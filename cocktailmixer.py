@@ -277,7 +277,7 @@ class SelectCocktailMenu(QWidget):
         
         self.header.emg.pressed.connect(lambda: self.stop_clicked.emit())
         
-    def update(self, cocktails, alcoholic):
+    def updateList(self, cocktails, alcoholic):
         print("> updating available cocktails")
         self.list.clear()
         if alcoholic == True:
@@ -331,8 +331,7 @@ class HardwareInterface():
             self.serialProcess(self.serial.readLine())
             
     def serialProcess(self, rx_line):
-        print("DEBUG: reading line: ")
-        print(rx_line)
+        print("DEBUG: reading line: MESSAGE:", (bytes(rx_line).decode('utf-8')).rstrip())
         
 class Controller():
     
@@ -397,7 +396,7 @@ class Controller():
         
     def goto_select_cocktail(self):
         # TODO: do the update directly after the non-alcoholic/all-cocktails selection in AlcoholMenu?
-        self.select_cocktail_menu.update(self.cocktail_data, self.alcohol)
+        self.select_cocktail_menu.updateList(self.cocktail_data, self.alcohol)
         print("> enter select cocktail menu")
         self.main_window.setCurrentWidget(self.select_cocktail_menu)
         
