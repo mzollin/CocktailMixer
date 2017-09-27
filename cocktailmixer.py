@@ -2,7 +2,7 @@ import sys
 import json
 import time
 
-from PyQt5.QtCore import Qt, pyqtSignal, QIODevice
+from PyQt5.QtCore import Qt, pyqtSignal, QIODevice, QObject
 from PyQt5.QtWidgets import QApplication, QProgressBar, QPushButton, QWidget, QStackedWidget, QStyleFactory, QGridLayout, QHBoxLayout, QVBoxLayout, QSizePolicy, QLabel, QSpacerItem, QListWidget, QListWidgetItem
 from PyQt5.QtGui import QPainter, QPen, QColor, QMovie, QFont
 from PyQt5.QtSerialPort import QSerialPort
@@ -280,12 +280,17 @@ class SelectCocktailMenu(QWidget):
     def updateList(self, cocktails, alcoholic):
         print("> updating available cocktails")
         self.list.clear()
-        if alcoholic == True:
+        if alcoholic:
             for p in cocktails["alcoholic"]:
                 self.list.addItem(p)
         else:
             for p in cocktails["non-alcoholic"]:
                 self.list.addItem(p)
+        self.list.setCurrentRow(0)
+                
+    def scrollList(self, counts):
+        print("DEBUG: scrolling list: " + str(counts))
+        self.list.setCurrentRow((self.list.currentRow() - counts) % self.list.count())
                 
 class SizePriceMenu(QWidget):
     
@@ -303,9 +308,12 @@ class SizePriceMenu(QWidget):
         
         self.header.emg.pressed.connect(lambda: self.stop_clicked.emit())
         
-class HardwareInterface():
+class HardwareInterface(QObject):
 
-    def __init__(self):
+    encoder_scrolled = pyqtSignal(int)
+
+    def __init__(self, parent = None):
+        super().__init__(parent)
         # TODO: define port at a better location
         # TODO: check for port opening / writing exceptions
         self.serial = QSerialPort()
@@ -336,7 +344,8 @@ class HardwareInterface():
         if serial_data["command"] == "update":
             if serial_data["id"] == "encoder":
                 print("DEBUG: " + serial_data["value"])
-        
+                # TODO: check if really a number, is cast to int ok?
+                self.encoder_scrolled.emit(int(serial_data["value"]))
         
 class Controller():
     
@@ -378,6 +387,8 @@ class Controller():
         self.intro_menu.start_clicked.connect(self.goto_alcohol)
         self.alcohol_menu.drink_clicked.connect(self.goto_select)
         self.mode_menu.select_cocktail_clicked.connect(self.goto_select_cocktail)
+        
+        self.hardware_interface.encoder_scrolled.connect(self.select_cocktail_menu.scrollList)
         
         print("> controller started")
         print("> enter intro menu")
