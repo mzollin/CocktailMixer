@@ -329,23 +329,26 @@ class HardwareInterface(QObject):
 
         self.serial.clear(QSerialPort.Input)
         
-        self.serial.write(b"DEBUG: serial write test")
-        self.serial.flush()
+        #self.serial.write(b"DEBUG: serial write test")
+        #self.serial.flush()
         
     def serialRead(self):
         #print("DEBUG: serial received data: ", (bytes(self.serial.readAll()).decode('utf-8')))
         if self.serial.canReadLine():
             print("DEBUG: processing received serial data")
             self.serialProcess(self.serial.readLine())
-            
-    def serialProcess(self, rx_line):
-        #print("DEBUG: reading line: MESSAGE:", (bytes(rx_line).decode('utf-8')).rstrip())
-        serial_data = json.loads(bytes(rx_line).decode('utf-8'))
-        if serial_data["command"] == "update":
-            if serial_data["id"] == "encoder":
-                print("DEBUG: " + serial_data["value"])
-                # TODO: check if really a number, is cast to int ok?
-                self.encoder_scrolled.emit(int(serial_data["value"]))
+
+    # TODO: implement checksum
+    def serialProcess(self, serial_data):
+        frame = json.loads(bytes(serial_data).decode('utf-8'))
+        cmd = frame["command"]
+        func = getattr(self, "command_" + cmd)
+        func(frame["id"], frame["value"])
+        
+    def command_update(self, cmd_id, value):
+        print("DEBUG: received: update " + cmd_id + " " + value)
+        # TODO: check if really a number
+        self.encoder_scrolled.emit(int(value))
         
 class Controller():
     
@@ -380,7 +383,7 @@ class Controller():
         self.main_window.addWidget(self.select_cocktail_menu)
         self.main_window.addWidget(self.size_price_menu)
         
-        # connect the slots
+        # connect the UI slots
         self.alcohol_menu.stop_clicked.connect(self.goto_intro)
         self.mode_menu.stop_clicked.connect(self.goto_intro)
         self.select_cocktail_menu.stop_clicked.connect(self.goto_intro)
@@ -389,6 +392,7 @@ class Controller():
         self.alcohol_menu.drink_clicked.connect(self.goto_select)
         self.mode_menu.select_cocktail_clicked.connect(self.goto_select_cocktail)
         
+        # connect the hardware interface command slots
         self.hardware_interface.encoder_scrolled.connect(self.select_cocktail_menu.scrollList)
         
         print("> controller started")
