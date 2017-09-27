@@ -311,6 +311,7 @@ class SizePriceMenu(QWidget):
 class HardwareInterface(QObject):
 
     encoder_scrolled = pyqtSignal(int)
+    emergency_stop = pyqtSignal()
 
     def __init__(self, parent = None):
         super().__init__(parent)
@@ -339,6 +340,8 @@ class HardwareInterface(QObject):
             self.serialProcess(self.serial.readLine())
 
     # TODO: implement checksum
+    # TODO: implement ACK/NAK
+    # TODO: implement exceptions to catch invalid command frames
     def serialProcess(self, serial_data):
         frame = json.loads(bytes(serial_data).decode('utf-8'))
         cmd = frame["command"]
@@ -347,8 +350,30 @@ class HardwareInterface(QObject):
         
     def command_update(self, cmd_id, value):
         print("DEBUG: received: update " + cmd_id + " " + value)
-        # TODO: check if really a number
-        self.encoder_scrolled.emit(int(value))
+        if cmd_id == "encoder":
+            # TODO: check if really a number
+            self.encoder_scrolled.emit(int(value))
+        elif cmd_id == "scale":
+            pass
+        elif cmd_id == "emergency_stop":
+            # TODO: implement latching emergency stop (check value)
+            self.emergency_stop.emit()
+        elif cmd_id == "coin_counter":
+            pass
+        elif cmd_id == "key_switch":
+            pass
+        
+    def command_finished(self, cmd_id, value):
+        print("DEBUG: received: finished " + cmd_id + " " + value)
+        
+    def command_get(self, cmd_id, value):
+        pass
+        
+    def command_set(self, cmd_id, value):
+        pass
+        
+    def command_pour(self, cmd_id, value):
+        pass
         
 class Controller():
     
@@ -394,6 +419,7 @@ class Controller():
         
         # connect the hardware interface command slots
         self.hardware_interface.encoder_scrolled.connect(self.select_cocktail_menu.scrollList)
+        self.hardware_interface.emergency_stop.connect(self.goto_intro)
         
         print("> controller started")
         print("> enter intro menu")
