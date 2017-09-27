@@ -11,6 +11,7 @@ class Menu(QWidget):
 
     def __init__(self, parent = None):
         super().__init__(parent)
+        self.resize(200, 200)
         layout = QGridLayout(self)
         scroll_up_button = QPushButton()
         scroll_down_button = QPushButton()
@@ -28,8 +29,6 @@ class Emulator():
         menu = Menu()
         menu.show()
         
-        menu.updated_encoder.connect(self.update_encoder)
-        
         # TODO: define port at a better location
         # TODO: check for port opening / writing exceptions
         self.serial = QSerialPort()
@@ -42,13 +41,13 @@ class Emulator():
         self.serial.setFlowControl(QSerialPort.NoFlowControl)
         assert self.serial.error() == QSerialPort.NoError
         
+        menu.updated_encoder.connect(self.update_encoder)
+        
         print("> EMU: emulator ready")
     
     def update_encoder(self, counts):
-        print("> EMU: sending debug")
-        #self.serial.write(b'{"name": "Gilbert", "wins": [["straight", "7p"], ["one pair", "10h"]]}\n')
+        print("> EMU: sending update_encoder")
         self.serial.write(b'{"command": "update", "id": "encoder", "value": "%d", "checksum": "ABCD"}\n' % counts)
-        #self.serial.write(b'{"alcoholic": {"Air Conditioner": [{"alc1": 50},{"alc2": 60},{"alc3": 65}],"Gin Tonic": [{"gin": 100},{"tonic": 100}]},"non-alcoholic": {"Virgin Mojito": [{"ginger ale": 150},{"syrup": 25}]}}\n')
         
 def main(args):
 
