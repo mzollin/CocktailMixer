@@ -5,12 +5,22 @@
 			{"alc2": 60},
 			{"alc3": 65}
 		],
+        "Cuba Libre": [
+			{"coke": 60},
+			{"rum": 30},
+			{"lime juice": 2}
+		],
 		"Gin Tonic": [
 			{"gin": 100},
 			{"tonic": 100}
 		]
 	},
 	"non-alcoholic": {
+        "Fruit Mix": [
+			{"orange juice": 75},
+            {"banana juice": 30},
+			{"ananas sirup": 15}
+		],
 		"Virgin Mojito": [
 			{"ginger ale": 150},
 			{"syrup": 25}

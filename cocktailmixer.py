@@ -354,6 +354,7 @@ class Controller():
         
         print(">  - loading cocktail databases")
         # TODO: implement error handling and maybe close the file in the end?
+        # TODO: maybe implement alphabetical sorting?
         with open("data/cocktails.json") as cocktail_json_file:
             self.cocktail_data = json.load(cocktail_json_file)
             
