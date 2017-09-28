@@ -311,6 +311,7 @@ class SizePriceMenu(QWidget):
 class HardwareInterface(QObject):
 
     encoder_scrolled = pyqtSignal(int)
+    encoder_clicked = pyqtSignal()
     emergency_stop = pyqtSignal()
 
     def __init__(self, parent = None):
@@ -353,6 +354,9 @@ class HardwareInterface(QObject):
         if cmd_id == "encoder":
             # TODO: check if really a number
             self.encoder_scrolled.emit(int(value))
+        elif cmd_id == "encoder_button":
+            # TODO: implement latching encoder button (check value)
+            self.encoder_clicked.emit()
         elif cmd_id == "scale":
             pass
         elif cmd_id == "emergency_stop":
@@ -418,13 +422,22 @@ class Controller():
         self.mode_menu.select_cocktail_clicked.connect(self.goto_select_cocktail)
         
         # connect the hardware interface command slots
-        self.hardware_interface.encoder_scrolled.connect(self.select_cocktail_menu.scrollList)
+        self.hardware_interface.encoder_scrolled.connect(self.handle_encoder_scrolled)
+        self.hardware_interface.encoder_clicked.connect(self.handle_encoder_clicked)
         self.hardware_interface.emergency_stop.connect(self.goto_intro)
         
         print("> controller started")
         print("> enter intro menu")
         self.main_window.setCurrentWidget(self.intro_menu)
         self.main_window.show()
+        
+    def handle_encoder_scrolled(self, counts):
+        if self.main_window.currentWidget() is self.select_cocktail_menu:
+            self.select_cocktail_menu.scrollList(counts)
+        
+    def handle_encoder_clicked(self):
+        if self.main_window.currentWidget() is self.select_cocktail_menu:
+            self.goto_size_price()
         
     def goto_alcohol(self):
         print("> enter alcohol menu")
