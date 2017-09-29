@@ -2,10 +2,12 @@ import sys
 import json
 import time
 
-from PyQt5.QtCore import Qt, pyqtSignal, QIODevice, QObject
-from PyQt5.QtWidgets import QApplication, QProgressBar, QPushButton, QWidget, QStackedWidget, QStyleFactory, QGridLayout, QHBoxLayout, QVBoxLayout, QSizePolicy, QLabel, QSpacerItem, QListWidget, QListWidgetItem
-from PyQt5.QtGui import QPainter, QPen, QColor, QMovie, QFont
+from PyQt5.QtCore import Qt, pyqtSignal, QIODevice, QObject, QPoint, QRect
+from PyQt5.QtWidgets import QApplication, QProgressBar, QPushButton, QWidget, QStackedWidget, QStyleFactory, QGridLayout, QHBoxLayout, QVBoxLayout, QSizePolicy, QLabel, QSpacerItem, QListWidget, QListWidgetItem, QCheckBox
+from PyQt5.QtGui import QPainter, QPen, QColor, QMovie, QFont, QPainter, QPolygon
 from PyQt5.QtSerialPort import QSerialPort
+
+# TODO: use cool font like in airplanes with corners and crossed zeroes?
 
 class HeaderLayout(QHBoxLayout):
 
@@ -58,24 +60,107 @@ class StyledPushButton(QPushButton):
             }
         """)
 
-class StyledProgressBar(QProgressBar):
+class CocktailProgressBar(QWidget):
+
+    def __init__(self, parent = None):
+        super().__init__(parent)
+        # self.setStyleSheet("""
+           # CocktailProgressBar {
+               # border: 1px solid #FFB900;
+               # border-radius: 5px;
+               # text-align: center;
+               # background-color: #FF0000;
+               # font-weight: bold;
+           # }
+           # CocktailProgressBar::chunk {
+               # background-color: #00FF00;
+               # margin: 0px;
+               # border-radius: 5px;
+          # }
+        # """)
+    def paintEvent(self, e):
+        # TODO: add ASCII drawing for the points
+        # TODO: fill faster in thinner areas? (more realistic)
+        # TODO: change from self.x()/.y() to self.size() size.width/.height
+        # TODO: correctly map values for different widget heights (now 2x)
+        # TODO: default value for setValue not called before first paint?
+        # TODO: turn green at 100%?
+        # TODO: filter values outside 0 - 100%
+        # TODO: fix bug where value is wrong after too fast update, maybe in HardwareInterface?
+        # TODO: maybe add some visual styles like borders or gradients?
+        x_offset = self.x()                 # offset from widget to window
+        y_offset = self.y()                 # offset from widget to window
+        bowl_width = 140 / 2                # measured from model
+        bowl_height = 92                    # measured from model
+        stem_width = 12 / 2                 # measured from model
+        stem_height = 100                   # measured from model
+        base_width = 90 / 2                 # measured from model
+        base_height = 8                     # measured from model
+        x_symaxis = (240 / 2) - x_offset    # divide screen in half vertically, subtract offset
+        y_spacing = 8                       # vertical positioning, trial and error
+        
+        a1 = QPoint(x_symaxis - bowl_width, y_spacing)
+        a2 = QPoint(x_symaxis - stem_width, y_spacing + bowl_height)
+        a3 = QPoint(x_symaxis - stem_width, y_spacing + bowl_height + stem_height)
+        a4 = QPoint(x_symaxis - base_width, y_spacing + bowl_height + stem_height)
+        a5 = QPoint(x_symaxis - base_width, y_spacing + bowl_height + stem_height + base_height)
+        
+        b1 = self.getSymPoint(a1, x_symaxis)
+        b2 = self.getSymPoint(a2, x_symaxis)
+        b3 = self.getSymPoint(a3, x_symaxis)
+        b4 = self.getSymPoint(a4, x_symaxis)
+        b5 = self.getSymPoint(a5, x_symaxis)
+        
+        qp = QPainter()
+        qp.begin(self)
+        qp.setPen(QColor("#FFB900"))
+        font = QFont()
+        font.setBold(True)
+        qp.setFont(font)
+        
+        qp.drawPolyline(QPolygon([a1, a2, a3, a4, a5, b5, b4, b3, b2, b1, a1]))
+        qp.drawText(QRect(a5.x(), a5.y(), 2 * base_width, 320 - a5.y() - y_offset), Qt.AlignCenter, str(self.value) + "%")
+        
+        # fill the Polyline
+        fill_width = 0
+        delta_x = a1.x() - a2.x()
+        delta_y = a2.y() - a1.y()
+        width_factor = delta_x / delta_y
+        
+        for i in range(2 * self.value):
+            fill_height = a5.y() - i
+            if fill_height >= a3.y():
+                fill_width = base_width
+            elif fill_height >= a2.y():
+                fill_width = stem_width
+            else:
+                fill_width = width_factor * (fill_height - base_height - stem_height)
+            qp.drawLine(x_symaxis - fill_width, fill_height, x_symaxis + fill_width, fill_height)
+        
+        qp.end()
+        
+    def setValue(self, value):
+        self.value = value
+        self.repaint()
+        
+    def getSymPoint(self, point, symaxis):
+        return QPoint((2 * symaxis - point.x()), point.y())
+        
+class StyledLabel(QLabel):
 
     def __init__(self, parent = None):
         super().__init__(parent)
         self.setStyleSheet("""
-            QProgressBar {
-                border: 1px solid #FFB900;
-                border-radius: 5px;
-                text-align: center;
-                background-color: #FF0000;
-                font-weight: bold;
-            }
-            QProgressBar::chunk {
-                background-color: #00FF00;
-                margin: 0px;
-                border-radius: 5px;
+            StyledLabel {
+                color: #FFB900;
+                font: bold;
             }
         """)
+        
+class StyledCheckBox(QCheckBox):
+
+    def __init__(self, parent = None):
+        super().__init__(parent)
 
 class StyledStackedWidget(QStackedWidget):
 
@@ -303,16 +388,67 @@ class SizePriceMenu(QWidget):
         self.layout.setContentsMargins(9, 9, 9, 9)
         self.header = HeaderLayout("SELECT SIZE")
         
-        self.layout.addLayout(self.header, 0, 0, 1, 0)
-        #self.layout.addWidget(self.list, 1, 0)
+        # TODO: make size buttons latching
+        self.shot = StyledPushButton()
+        self.shot.setText("SHOT\n2cl")
+        self.medium = StyledPushButton()
+        self.medium.setText("MEDIUM\n1dl")
+        self.large = StyledPushButton()
+        self.large.setText("LARGE\n2dl")
+        self.spacer = QSpacerItem(1, 1, QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.price = StyledLabel()
+        self.price.setText("CHF 6.42")
+        self.price.setStyleSheet("""
+            StyledLabel {
+                font: bold 40px;
+                color: #FFB900;
+            }
+        """)
+        self.price.setAlignment(Qt.AlignCenter)
+        self.glass_label = StyledLabel()
+        self.glass_label.setText("Glass Status:")
+        self.glass_label.setAlignment(Qt.AlignCenter)
+        # TODO: style the checkbox in StyledCheckBox
+        self.glass = StyledCheckBox()
+        self.start = StyledPushButton()
+        self.start.setText("START")
+        
+        self.layout.addLayout(self.header, 0, 0, 1, 3)
+        self.layout.addWidget(self.shot, 1, 0)
+        self.layout.addWidget(self.medium, 1, 1)
+        self.layout.addWidget(self.large, 1, 2)
+        ##self.layout.addItem(self.spacer, 2, 0, 1, 3)
+        self.layout.addWidget(self.price, 2, 0, 1, 3)
+        ##self.layout.addItem(self.spacer, 4, 0, 1, 3)
+        self.layout.addWidget(self.glass_label, 3, 0, 1, 2)
+        self.layout.addWidget(self.glass, 3, 2)
+        #self.layout.addItem(self.spacer, 6, 0, 1, 3)
+        self.layout.addWidget(self.start, 4, 0, 1, 3)
         
         self.header.emg.pressed.connect(lambda: self.stop_clicked.emit())
         
+class PouringMenu(QWidget):
+
+    def __init__(self, parent = None):
+        super().__init__(parent)
+        self.layout = QGridLayout(self)
+        self.layout.setSpacing(8)
+        self.layout.setContentsMargins(9, 9, 9, 9)
+        # TODO: change to "FINISHED!" when finished
+        self.header = HeaderLayout("PLEASE WAIT...")
+        
+        self.progress = CocktailProgressBar()
+        self.progress.setValue(0)
+        
+        self.layout.addLayout(self.header, 0, 0, 1, 3)
+        self.layout.addWidget(self.progress, 1, 0, 1, 3)
+        
 class HardwareInterface(QObject):
 
-    encoder_scrolled = pyqtSignal(int)
+    encoder_changed = pyqtSignal(int)
     encoder_clicked = pyqtSignal()
     emergency_stop = pyqtSignal()
+    scale_changed = pyqtSignal(int)
 
     def __init__(self, parent = None):
         super().__init__(parent)
@@ -353,12 +489,13 @@ class HardwareInterface(QObject):
         print("DEBUG: received: update " + cmd_id + " " + value)
         if cmd_id == "encoder":
             # TODO: check if really a number
-            self.encoder_scrolled.emit(int(value))
+            self.encoder_changed.emit(int(value))
         elif cmd_id == "encoder_button":
             # TODO: implement latching encoder button (check value)
             self.encoder_clicked.emit()
         elif cmd_id == "scale":
-            pass
+            # TODO: check if really a number
+            self.scale_changed.emit(int(value))
         elif cmd_id == "emergency_stop":
             # TODO: implement latching emergency stop (check value)
             self.emergency_stop.emit()
@@ -403,6 +540,7 @@ class Controller():
         self.mode_menu = ModeMenu()
         self.select_cocktail_menu = SelectCocktailMenu()
         self.size_price_menu = SizePriceMenu()
+        self.pouring_menu = PouringMenu()
         self.main_window = StyledStackedWidget()
         
         # add the menus to the window
@@ -411,6 +549,7 @@ class Controller():
         self.main_window.addWidget(self.mode_menu)
         self.main_window.addWidget(self.select_cocktail_menu)
         self.main_window.addWidget(self.size_price_menu)
+        self.main_window.addWidget(self.pouring_menu)
         
         # connect the UI slots
         self.alcohol_menu.stop_clicked.connect(self.goto_intro)
@@ -422,22 +561,24 @@ class Controller():
         self.mode_menu.select_cocktail_clicked.connect(self.goto_select_cocktail)
         
         # connect the hardware interface command slots
-        self.hardware_interface.encoder_scrolled.connect(self.handle_encoder_scrolled)
+        self.hardware_interface.encoder_changed.connect(self.handle_encoder_changed)
         self.hardware_interface.encoder_clicked.connect(self.handle_encoder_clicked)
         self.hardware_interface.emergency_stop.connect(self.goto_intro)
+        self.hardware_interface.scale_changed.connect(self.pouring_menu.progress.setValue)
         
         print("> controller started")
         print("> enter intro menu")
         self.main_window.setCurrentWidget(self.intro_menu)
         self.main_window.show()
         
-    def handle_encoder_scrolled(self, counts):
+    def handle_encoder_changed(self, counts):
         if self.main_window.currentWidget() is self.select_cocktail_menu:
             self.select_cocktail_menu.scrollList(counts)
         
     def handle_encoder_clicked(self):
         if self.main_window.currentWidget() is self.select_cocktail_menu:
             self.goto_size_price()
+            #self.main_window.setCurrentWidget(self.pouring_menu)
         
     def goto_alcohol(self):
         print("> enter alcohol menu")

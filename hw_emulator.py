@@ -1,6 +1,6 @@
 import sys
-from PyQt5.QtCore import QIODevice, pyqtSignal
-from PyQt5.QtWidgets import QApplication, QStyleFactory, QWidget, QGridLayout, QSizePolicy, QPushButton, QLabel
+from PyQt5.QtCore import QIODevice, pyqtSignal, Qt
+from PyQt5.QtWidgets import QApplication, QStyleFactory, QWidget, QGridLayout, QSizePolicy, QPushButton, QLabel, QScrollBar
 from PyQt5.QtSerialPort import QSerialPort
 
 # bridge COM ports COM8 and COM9 (using com0com), cocktailmixer controller listening on COM8
@@ -10,6 +10,7 @@ class Menu(QWidget):
     encoder_update = pyqtSignal(int)
     encoder_click = pyqtSignal()
     emergency_stop = pyqtSignal()
+    scale_update = pyqtSignal(int)
 
     def __init__(self, parent = None):
         super().__init__(parent)
@@ -18,27 +19,38 @@ class Menu(QWidget):
         layout = QGridLayout(self)
         encoder_label = QLabel()
         emergency_stop_label = QLabel()
+        scale_label = QLabel()
         encoder_up_button = QPushButton()
         encoder_down_button = QPushButton()
         encoder_click_button = QPushButton()
         emergency_stop_button = QPushButton()
+        scale_scroller = QScrollBar(Qt.Horizontal)
+        scale_scroller.setMaximum(100)
+        scale_value = QLabel()
         encoder_label.setText("Encoder")
         emergency_stop_label.setText("Emergency Stop")
         encoder_up_button.setText("scroll up")
         encoder_down_button.setText("scroll down")
         encoder_click_button.setText("select")
         emergency_stop_button.setText("STOP")
+        scale_label.setText("Scale Value")
+        scale_value.setText(str(0))
         layout.addWidget(encoder_label, 0, 0)
         layout.addWidget(emergency_stop_label, 0, 1)
+        layout.addWidget(scale_label, 0, 2)
         layout.addWidget(encoder_up_button, 1, 0)
         layout.addWidget(encoder_down_button, 2, 0)
         layout.addWidget(encoder_click_button, 3, 0)
         layout.addWidget(emergency_stop_button, 1, 1)
+        layout.addWidget(scale_scroller, 1, 2)
+        layout.addWidget(scale_value, 2, 2)
         
         encoder_up_button.clicked.connect(lambda: self.encoder_update.emit(1))
         encoder_down_button.clicked.connect(lambda: self.encoder_update.emit(-1))
         encoder_click_button.clicked.connect(self.encoder_click)
         emergency_stop_button.clicked.connect(self.emergency_stop)
+        scale_scroller.valueChanged.connect(lambda: self.scale_update.emit(scale_scroller.value()))
+        scale_scroller.valueChanged.connect(lambda: scale_value.setText(str(scale_scroller.value())))
         
 class Emulator():
 
@@ -61,6 +73,7 @@ class Emulator():
         menu.encoder_update.connect(self.update_encoder)
         menu.encoder_click.connect(self.click_encoder)
         menu.emergency_stop.connect(self.update_emergency_stop)
+        menu.scale_update.connect(self.update_scale)
         
         print("> EMU: emulator ready")
     
@@ -75,6 +88,10 @@ class Emulator():
     def update_emergency_stop(self):
         print("> EMU: sending update_emergency_stop")
         self.serial.write(b'{"command": "update", "id": "emergency_stop", "value": "1", "checksum": "ABCD"}\n')
+        
+    def update_scale(self, value):
+        print("> EMU: sending update_scale")
+        self.serial.write(b'{"command": "update", "id": "scale", "value": "%d", "checksum": "ABCD"}\n' % value)
         
 def main(args):
 
