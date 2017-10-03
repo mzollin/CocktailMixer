@@ -219,7 +219,7 @@ class IntroMenu(QWidget):
             }
         """)
         
-        self.container.label_pressed.connect(lambda: self.start_clicked.emit())
+        self.container.label_pressed.connect(self.start_clicked)
 
         self.layout.addStretch()
         self.layout.addWidget(self.title1)
@@ -266,7 +266,7 @@ class AlcoholMenu(QWidget):
         
         self.choice1.pressed.connect(lambda: self.drink_clicked.emit(False))
         self.choice2.pressed.connect(lambda: self.drink_clicked.emit(True))
-        self.header.emg.pressed.connect(lambda: self.stop_clicked.emit())
+        self.header.emg.pressed.connect(self.stop_clicked)
 
 class ModeMenu(QWidget):
 
@@ -314,8 +314,8 @@ class ModeMenu(QWidget):
         #self.pb.setValue(50)
         #self.layout.addWidget(self.pb, 4, 0, 1, 2)
         
-        self.header.emg.pressed.connect(lambda: self.stop_clicked.emit())
-        self.choice1.pressed.connect(lambda: self.select_cocktail_clicked.emit())
+        self.header.emg.pressed.connect(self.stop_clicked)
+        self.choice1.pressed.connect(self.select_cocktail_clicked)
         
 class SelectCocktailMenu(QWidget):
 
@@ -360,7 +360,7 @@ class SelectCocktailMenu(QWidget):
         self.layout.addLayout(self.header, 0, 0, 1, 0)
         self.layout.addWidget(self.list, 1, 0)
         
-        self.header.emg.pressed.connect(lambda: self.stop_clicked.emit())
+        self.header.emg.pressed.connect(self.stop_clicked)
         
     def updateList(self, cocktails, alcoholic):
         print("> updating available cocktails")
@@ -426,8 +426,8 @@ class SizePriceMenu(QWidget):
         #self.layout.addItem(self.spacer, 6, 0, 1, 3)
         self.layout.addWidget(self.start, 4, 0, 1, 3)
         
-        self.start.pressed.connect(lambda: self.start_clicked.emit())
-        self.header.emg.pressed.connect(lambda: self.stop_clicked.emit())
+        self.start.pressed.connect(self.start_clicked)
+        self.header.emg.pressed.connect(self.stop_clicked)
         
 class PouringMenu(QWidget):
 
