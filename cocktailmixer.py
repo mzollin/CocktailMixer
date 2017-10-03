@@ -380,6 +380,7 @@ class SelectCocktailMenu(QWidget):
 class SizePriceMenu(QWidget):
     
     stop_clicked = pyqtSignal()
+    start_clicked = pyqtSignal()
 
     def __init__(self, parent = None):
         super().__init__(parent)
@@ -425,6 +426,7 @@ class SizePriceMenu(QWidget):
         #self.layout.addItem(self.spacer, 6, 0, 1, 3)
         self.layout.addWidget(self.start, 4, 0, 1, 3)
         
+        self.start.pressed.connect(lambda: self.start_clicked.emit())
         self.header.emg.pressed.connect(lambda: self.stop_clicked.emit())
         
 class PouringMenu(QWidget):
@@ -559,6 +561,7 @@ class Controller():
         self.intro_menu.start_clicked.connect(self.goto_alcohol)
         self.alcohol_menu.drink_clicked.connect(self.goto_select)
         self.mode_menu.select_cocktail_clicked.connect(self.goto_select_cocktail)
+        self.size_price_menu.start_clicked.connect(self.goto_pouring_menu)
         
         # connect the hardware interface command slots
         self.hardware_interface.encoder_changed.connect(self.handle_encoder_changed)
@@ -578,7 +581,6 @@ class Controller():
     def handle_encoder_clicked(self):
         if self.main_window.currentWidget() is self.select_cocktail_menu:
             self.goto_size_price()
-            #self.main_window.setCurrentWidget(self.pouring_menu)
         
     def goto_alcohol(self):
         print("> enter alcohol menu")
@@ -604,6 +606,10 @@ class Controller():
     def goto_size_price(self):
         print("> enter size price menu")
         self.main_window.setCurrentWidget(self.size_price_menu)
+        
+    def goto_pouring_menu(self):
+        print("> enter pouring menu")
+        self.main_window.setCurrentWidget(self.pouring_menu)
 
 def main(args):
     app = QApplication(args)
