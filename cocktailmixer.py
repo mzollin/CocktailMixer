@@ -3,7 +3,7 @@ import json
 import time
 
 from PyQt5.QtCore import Qt, pyqtSignal, QIODevice, QObject, QPoint, QRect
-from PyQt5.QtWidgets import QApplication, QProgressBar, QPushButton, QWidget, QStackedWidget, QStyleFactory, QGridLayout, QHBoxLayout, QVBoxLayout, QSizePolicy, QLabel, QSpacerItem, QListWidget, QListWidgetItem, QCheckBox
+from PyQt5.QtWidgets import QApplication, QProgressBar, QPushButton, QWidget, QStackedWidget, QStyleFactory, QGridLayout, QHBoxLayout, QVBoxLayout, QSizePolicy, QLabel, QSpacerItem, QListWidget, QListWidgetItem, QCheckBox, QButtonGroup
 from PyQt5.QtGui import QPainter, QPen, QColor, QMovie, QFont, QPainter, QPolygon
 from PyQt5.QtSerialPort import QSerialPort
 
@@ -49,13 +49,14 @@ class StyledPushButton(QPushButton):
         self.setMinimumWidth(10)
         self.setMinimumHeight(10)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        # TODO: even darker shade of orange for pressed?
         self.setStyleSheet("""
             StyledPushButton {
                 background-color: #FFB900;
                 border-radius: 5px;
                 font: bold 14px;
             }
-            StyledPushButton:pressed {
+            StyledPushButton:checked, StyledPushButton:pressed {
                 background-color: #DB9E00;
             }
         """)
@@ -381,6 +382,7 @@ class SizePriceMenu(QWidget):
     
     stop_clicked = pyqtSignal()
     start_clicked = pyqtSignal()
+    size_clicked = pyqtSignal(int)
 
     def __init__(self, parent = None):
         super().__init__(parent)
@@ -388,14 +390,22 @@ class SizePriceMenu(QWidget):
         self.layout.setSpacing(8)
         self.layout.setContentsMargins(9, 9, 9, 9)
         self.header = HeaderLayout("SELECT SIZE")
+        self.group = QButtonGroup()
+        self.group.setExclusive(True)
         
-        # TODO: make size buttons latching
+        # TODO: modify checkable buttons to activate on press, not click
         self.shot = StyledPushButton()
         self.shot.setText("SHOT\n2cl")
+        self.shot.setCheckable(True)
+        self.group.addButton(self.shot)
         self.medium = StyledPushButton()
         self.medium.setText("MEDIUM\n1dl")
+        self.medium.setCheckable(True)
+        self.group.addButton(self.medium)
         self.large = StyledPushButton()
         self.large.setText("LARGE\n2dl")
+        self.large.setCheckable(True)
+        self.group.addButton(self.large)
         self.spacer = QSpacerItem(1, 1, QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.price = StyledLabel()
         self.price.setText("CHF 6.42")
@@ -427,6 +437,9 @@ class SizePriceMenu(QWidget):
         self.layout.addWidget(self.start, 4, 0, 1, 3)
         
         self.start.pressed.connect(self.start_clicked)
+        self.shot.pressed.connect(lambda: self.size_clicked.emit(1))
+        self.medium.pressed.connect(lambda: self.size_clicked.emit(2))
+        self.large.pressed.connect(lambda: self.size_clicked.emit(3))
         self.header.emg.pressed.connect(self.stop_clicked)
         
 class PouringMenu(QWidget):
@@ -481,6 +494,7 @@ class HardwareInterface(QObject):
     # TODO: implement checksum
     # TODO: implement ACK/NAK
     # TODO: implement exceptions to catch invalid command frames
+    # FIXME: why are there errors if JSON data gets sent too fast?
     def serialProcess(self, serial_data):
         frame = json.loads(bytes(serial_data).decode('utf-8'))
         cmd = frame["command"]
@@ -562,6 +576,7 @@ class Controller():
         self.alcohol_menu.drink_clicked.connect(self.goto_select)
         self.mode_menu.select_cocktail_clicked.connect(self.goto_select_cocktail)
         self.size_price_menu.start_clicked.connect(self.goto_pouring_menu)
+        self.size_price_menu.size_clicked.connect(self.handle_size_buttons)
         
         # connect the hardware interface command slots
         self.hardware_interface.encoder_changed.connect(self.handle_encoder_changed)
@@ -581,6 +596,15 @@ class Controller():
     def handle_encoder_clicked(self):
         if self.main_window.currentWidget() is self.select_cocktail_menu:
             self.goto_size_price()
+            
+    def handle_size_buttons(self, size):
+        # TODO: collect this data for the pouring command
+        if size == 1:
+            print("DEBUG: shot button pressed")
+        elif size == 2:
+            print("DEBUG: medium button pressed")
+        elif size == 3:
+            print("DEBUG: large button pressed")
         
     def goto_alcohol(self):
         print("> enter alcohol menu")
