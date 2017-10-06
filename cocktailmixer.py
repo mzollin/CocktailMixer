@@ -344,6 +344,7 @@ class SelectCocktailMenu(QWidget):
                 height: 0px;
             }
         """)
+        self.list.setSortingEnabled(True)
         
         #self.list.addItem("Apricot Sling")
 
@@ -364,13 +365,13 @@ class SelectCocktailMenu(QWidget):
         self.header.emg.pressed.connect(self.stop_clicked)
         
     def updateList(self, cocktails, alcoholic):
+        # TODO: display only cocktails with all ingredients available
         print("> updating available cocktails")
         self.list.clear()
+        for p in cocktails["non-alcoholic"]:
+            self.list.addItem(p)
         if alcoholic:
             for p in cocktails["alcoholic"]:
-                self.list.addItem(p)
-        else:
-            for p in cocktails["non-alcoholic"]:
                 self.list.addItem(p)
         self.list.setCurrentRow(0)
                 
@@ -436,6 +437,7 @@ class SizePriceMenu(QWidget):
         #self.layout.addItem(self.spacer, 6, 0, 1, 3)
         self.layout.addWidget(self.start, 4, 0, 1, 3)
         
+        # TODO: only activate start button after a size button has been pressed
         self.start.pressed.connect(self.start_clicked)
         self.shot.pressed.connect(lambda: self.size_clicked.emit(1))
         self.medium.pressed.connect(lambda: self.size_clicked.emit(2))
@@ -542,7 +544,6 @@ class Controller():
         
         print(">  - loading cocktail databases")
         # TODO: implement error handling and maybe close the file in the end?
-        # TODO: maybe implement alphabetical sorting?
         with open("data/cocktails.json") as cocktail_json_file:
             self.cocktail_data = json.load(cocktail_json_file)
             
@@ -577,7 +578,7 @@ class Controller():
         self.size_price_menu.stop_clicked.connect(self.goto_intro)
         self.pouring_menu.stop_clicked.connect(self.goto_intro)
         self.intro_menu.start_clicked.connect(self.goto_alcohol)
-        self.alcohol_menu.drink_clicked.connect(self.goto_select)
+        self.alcohol_menu.drink_clicked.connect(self.goto_mode)
         self.mode_menu.select_cocktail_clicked.connect(self.goto_select_cocktail)
         self.size_price_menu.start_clicked.connect(self.goto_pouring_menu)
         self.size_price_menu.size_clicked.connect(self.handle_size_buttons)
@@ -609,12 +610,17 @@ class Controller():
             print("DEBUG: medium button pressed")
         elif size == 3:
             print("DEBUG: large button pressed")
+        self.size = size
+        
+    def start_pouring(self):
+        cocktail = self.select_cocktail_menu.list.currentItem().text()
+        print("DEBUG: pouring " + cocktail + "...")
         
     def goto_alcohol(self):
         print("> enter alcohol menu")
         self.main_window.setCurrentWidget(self.alcohol_menu)
         
-    def goto_select(self, alcohol):   # TODO: add default value = False?
+    def goto_mode(self, alcohol):   # TODO: add default value = False?
         print("DEBUG: alcohol: " + str(alcohol))
         print("> enter mode menu")
         self.alcohol = alcohol
@@ -627,6 +633,7 @@ class Controller():
         
     def goto_select_cocktail(self):
         # TODO: do the update directly after the non-alcoholic/all-cocktails selection in AlcoholMenu?
+        # TODO: better way than to copy the whole list over?
         self.select_cocktail_menu.updateList(self.cocktail_data, self.alcohol)
         print("> enter select cocktail menu")
         self.main_window.setCurrentWidget(self.select_cocktail_menu)
@@ -638,6 +645,7 @@ class Controller():
     def goto_pouring_menu(self):
         print("> enter pouring menu")
         self.main_window.setCurrentWidget(self.pouring_menu)
+        self.start_pouring()
 
 def main(args):
     app = QApplication(args)
