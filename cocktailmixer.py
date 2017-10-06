@@ -444,6 +444,8 @@ class SizePriceMenu(QWidget):
         
 class PouringMenu(QWidget):
 
+    stop_clicked = pyqtSignal()
+
     def __init__(self, parent = None):
         super().__init__(parent)
         self.layout = QGridLayout(self)
@@ -457,6 +459,8 @@ class PouringMenu(QWidget):
         
         self.layout.addLayout(self.header, 0, 0, 1, 3)
         self.layout.addWidget(self.progress, 1, 0, 1, 3)
+        
+        self.header.emg.pressed.connect(self.stop_clicked)
         
 class HardwareInterface(QObject):
 
@@ -572,6 +576,7 @@ class Controller():
         self.mode_menu.stop_clicked.connect(self.goto_intro)
         self.select_cocktail_menu.stop_clicked.connect(self.goto_intro)
         self.size_price_menu.stop_clicked.connect(self.goto_intro)
+        self.pouring_menu.stop_clicked.connect(self.goto_intro)
         self.intro_menu.start_clicked.connect(self.goto_alcohol)
         self.alcohol_menu.drink_clicked.connect(self.goto_select)
         self.mode_menu.select_cocktail_clicked.connect(self.goto_select_cocktail)
