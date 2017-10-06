@@ -491,14 +491,13 @@ class HardwareInterface(QObject):
         
     def serialRead(self):
         #print("DEBUG: serial received data: ", (bytes(self.serial.readAll()).decode('utf-8')))
-        if self.serial.canReadLine():
+        while self.serial.canReadLine():
             print("DEBUG: processing received serial data")
             self.serialProcess(self.serial.readLine())
 
     # TODO: implement checksum
     # TODO: implement ACK/NAK
     # TODO: implement exceptions to catch invalid command frames
-    # FIXME: why are there errors if JSON data gets sent too fast?
     def serialProcess(self, serial_data):
         frame = json.loads(bytes(serial_data).decode('utf-8'))
         cmd = frame["command"]
