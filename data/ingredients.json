@@ -1,9 +1,15 @@
 {
-	"alc1": [{"price": 2.01}, {"density": 1.05}],
-	"alc2": [{"price": 3.11}, {"density": 0.95}],
-	"alc3": [{"price": 1.6}, {"density": 1.1}],
-	"gin": [{"price": 4.0}, {"density": 0.98}],
-	"tonic": [{"price": 0.6}, {"density": 1.05}],
-	"ginger ale": [{"price": 0.86}, {"density": 1.15}],
-	"syrup": [{"price": 1.01}, {"density": 2.05}]
+	"alc1": {"price": 2.01, "density": 1.05},
+	"alc2": {"price": 3.11, "density": 0.95},
+	"alc3": {"price": 1.6, "density": 1.1},
+	"gin": {"price": 4.0, "density": 0.98},
+	"tonic": {"price": 0.6, "density": 1.05},
+	"ginger ale": {"price": 0.86, "density": 1.15},
+	"syrup": {"price": 1.01, "density": 2.05},
+    "coke": {"price": 1.51, "density": 1.25},
+    "rum": {"price": 3.2, "density": 1.15},
+    "lime juice": {"price": 2.5, "density": 1.6},
+    "orange juice": {"price": 1.9, "density": 1.7},
+    "banana juice": {"price": 3.2, "density": 1.95},
+    "ananas juice": {"price": 2.35, "density": 1.75}
 }
