@@ -1,7 +1,6 @@
 import sys
 import json
 import time
-import copy
 
 from PyQt5.QtCore import Qt, pyqtSignal, QIODevice, QObject, QPoint, QRect
 from PyQt5.QtWidgets import QApplication, QProgressBar, QPushButton, QWidget, QStackedWidget, QStyleFactory, QGridLayout, QHBoxLayout, QVBoxLayout, QSizePolicy, QLabel, QSpacerItem, QListWidget, QListWidgetItem, QCheckBox, QButtonGroup
@@ -620,26 +619,27 @@ class Controller():
         
         # TODO: what if not found at all? should not happen in reality
         if cocktail in self.cocktail_data["non-alcoholic"]:
-            recipe_volume = self.cocktail_data["non-alcoholic"][cocktail]
+            recipe_volumes = self.cocktail_data["non-alcoholic"][cocktail]
         else:
-            recipe_volume = self.cocktail_data["alcoholic"][cocktail]
+            recipe_volumes = self.cocktail_data["alcoholic"][cocktail]
         
         # DEBUG
         #print(self.cocktail_data)
         
-        print("DEBUG: recipe in volume: " + str(recipe_volume))
-        # TODO: can we find a way to remove the deepcopy without the accumulation-bug?
-        recipe_mass = self.get_mass(copy.deepcopy(recipe_volume))
-        print("DEBUG: recipe in mass: " + str(recipe_mass))
+        print("DEBUG: recipe in volume: " + str(recipe_volumes))
+        recipe_masses = self.get_masses(recipe_volumes)
+        print("DEBUG: recipe in mass: " + str(recipe_masses))
 
         #mylist = [self.cocktail_data[k][cocktail] for k in self.cocktail_data]
         #print(mylist)
         
-    def get_mass(self, volume):
-        for ingredient_dict in volume:
-            for key, value in ingredient_dict.items():
-                ingredient_dict[key] *= self.ingredients_data[key]["density"]
-        return volume
+    def get_masses(self, volumes):
+        masses = []
+        for ingredient in volumes:
+            name = ingredient[0]
+            mass = ingredient[1] * self.ingredients_data[name]["density"]
+            masses.append([name, mass])
+        return masses
         
     def goto_alcohol(self):
         print("> enter alcohol menu")
