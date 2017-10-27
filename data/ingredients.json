@@ -11,5 +11,5 @@
     "lime juice": {"price": 2.5, "density": 1.6},
     "orange juice": {"price": 1.9, "density": 1.7},
     "banana juice": {"price": 3.2, "density": 1.95},
-    "ananas juice": {"price": 2.35, "density": 1.75}
+    "ananas syrup": {"price": 2.35, "density": 1.75}
 }
