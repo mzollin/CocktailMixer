@@ -439,9 +439,9 @@ class SizePriceMenu(QWidget):
         
         # TODO: only activate start button after a size button has been pressed
         self.start.pressed.connect(self.start_clicked)
-        self.shot.pressed.connect(lambda: self.size_clicked.emit(1))
-        self.medium.pressed.connect(lambda: self.size_clicked.emit(2))
-        self.large.pressed.connect(lambda: self.size_clicked.emit(3))
+        self.shot.pressed.connect(lambda: self.size_clicked.emit(20))
+        self.medium.pressed.connect(lambda: self.size_clicked.emit(100))
+        self.large.pressed.connect(lambda: self.size_clicked.emit(200))
         self.header.emg.pressed.connect(self.stop_clicked)
         
 class PouringMenu(QWidget):
@@ -604,11 +604,11 @@ class Controller():
             
     def handle_size_buttons(self, size):
         # TODO: collect this data for the pouring command
-        if size == 1:
+        if size == 20:
             print("DEBUG: shot button pressed")
-        elif size == 2:
+        elif size == 100:
             print("DEBUG: medium button pressed")
-        elif size == 3:
+        elif size == 200:
             print("DEBUG: large button pressed")
         self.size = size
         
@@ -626,18 +626,42 @@ class Controller():
         # DEBUG
         #print(self.cocktail_data)
         
-        print("DEBUG: recipe in volume: " + str(recipe_volumes))
-        recipe_masses = self.get_masses(recipe_volumes)
-        print("DEBUG: recipe in mass: " + str(recipe_masses))
+        print("DEBUG: recipe in original volumes: " + str(recipe_volumes))
+        # FIXME: read correct norm. value from size pressed
+        recipe_normalized_volumes = self.get_normalized_volumes(self.size, recipe_volumes)
+        print("DEBUG: recipe in normalized volumes: " + str(recipe_normalized_volumes))
+        recipe_masses = self.get_masses(recipe_normalized_volumes)
+        print("DEBUG: recipe in normalized masses: " + str(recipe_masses))
 
         #mylist = [self.cocktail_data[k][cocktail] for k in self.cocktail_data]
         #print(mylist)
+        
+    def get_total_volume(self, volumes):
+        volume = 0
+        for ingredients in volumes:
+            volume += ingredients[1]
+        print("DEBUG: total volume: " + str(volume))
+        return volume
+        
+    def get_normalized_volumes(self, normal_volume, volumes):
+        normalized_volumes = []
+        normalization_factor = normal_volume / self.get_total_volume(volumes)
+        print("DEBUG: normalization_factor: " + str(round(normalization_factor, 3)))
+        for ingredient in volumes:
+            name = ingredient[0]
+            mass = ingredient[1] * normalization_factor
+            # TODO: remove? just to truncate the floats for DEBUG output
+            mass = round(mass, 3)
+            normalized_volumes.append([name, mass])
+        return normalized_volumes
         
     def get_masses(self, volumes):
         masses = []
         for ingredient in volumes:
             name = ingredient[0]
             mass = ingredient[1] * self.ingredients_data[name]["density"]
+            # TODO: remove? just to truncate the floats for DEBUG output
+            mass = round(mass, 3)
             masses.append([name, mass])
         return masses
         
@@ -665,6 +689,8 @@ class Controller():
         
     def goto_size_price(self):
         print("> enter size price menu")
+        # TODO: temporary workaround: default value 20ml if no size button pressed
+        self.size = 20
         self.main_window.setCurrentWidget(self.size_price_menu)
         
     def goto_pouring_menu(self):
