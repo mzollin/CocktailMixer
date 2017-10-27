@@ -398,6 +398,7 @@ class SizePriceMenu(QWidget):
         self.shot = StyledPushButton()
         self.shot.setText("SHOT\n2cl")
         self.shot.setCheckable(True)
+        self.shot.setChecked(True)
         self.group.addButton(self.shot)
         self.medium = StyledPushButton()
         self.medium.setText("MEDIUM\n1dl")
@@ -437,7 +438,7 @@ class SizePriceMenu(QWidget):
         #self.layout.addItem(self.spacer, 6, 0, 1, 3)
         self.layout.addWidget(self.start, 4, 0, 1, 3)
         
-        # TODO: only activate start button after a size button has been pressed
+        # TODO: only activate start button after a glass is detected
         self.start.pressed.connect(self.start_clicked)
         self.shot.pressed.connect(lambda: self.size_clicked.emit(20))
         self.medium.pressed.connect(lambda: self.size_clicked.emit(100))
@@ -689,7 +690,7 @@ class Controller():
         
     def goto_size_price(self):
         print("> enter size price menu")
-        # TODO: temporary workaround: default value 20ml if no size button pressed
+        # default value 20ml if no size button pressed
         self.size = 20
         self.main_window.setCurrentWidget(self.size_price_menu)
         
