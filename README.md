@@ -1,4 +1,4 @@
-# cocktailmixer
+# CocktailMixer
 work in progress: cheap cocktail mixing machine / barbot with all the features you need
 
 ## system overview
